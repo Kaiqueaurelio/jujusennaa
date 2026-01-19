@@ -1,24 +1,33 @@
-import { Product } from '@/data/store';
+import { motion } from 'framer-motion';
+import { Product } from '@/hooks/useProducts';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
   onClick: () => void;
+  index?: number;
 }
 
-export function ProductCard({ product, onClick }: ProductCardProps) {
+export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
   return (
-    <div 
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+      whileHover={{ scale: 1.03, y: -5 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className="group netflix-card cursor-pointer overflow-hidden"
     >
       <div className="relative aspect-[4/3] bg-secondary overflow-hidden">
         {product.image ? (
-          <img 
+          <motion.img 
             src={product.image} 
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover"
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.5 }}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary/30 to-secondary flex items-center justify-center">
@@ -39,7 +48,12 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         </div>
 
         {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"
+          initial={{ opacity: 0 }}
+          whileHover={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        />
       </div>
       
       <div className="p-4">
@@ -61,6 +75,6 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
