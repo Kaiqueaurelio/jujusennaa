@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useStore } from '@/contexts/StoreContext';
+import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, useGenerateProductImage, Product } from '@/hooks/useProducts';
+import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
+import { useProfile, useUpdateProfile, useUploadAvatar, useUploadProductImage } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,13 +14,23 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { 
   LogOut, User, ShoppingBag, Link2, Settings, Trash2, Plus, 
-  Edit2, Save, X, BarChart3, Eye
+  Edit2, Save, X, BarChart3, Eye, Upload, Wand2, Loader2
 } from 'lucide-react';
-import { Product, Link as LinkType } from '@/data/store';
 
 export default function Admin() {
   const { isAuthenticated, logout } = useAuth();
-  const { products, links, profile, updateProduct, addProduct, deleteProduct, updateLink, addLink, deleteLink, updateProfile } = useStore();
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: links = [], isLoading: linksLoading } = useLinks();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  
+  const addProduct = useAddProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+  const addLink = useAddLink();
+  const updateLink = useUpdateLink();
+  const deleteLink = useDeleteLink();
+  const updateProfile = useUpdateProfile();
+  const uploadAvatar = useUploadAvatar();
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingLink, setEditingLink] = useState<LinkType | null>(null);
@@ -29,37 +41,47 @@ export default function Admin() {
     return <Navigate to="/admin/login" replace />;
   }
 
+  if (productsLoading || linksLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   const totalClicks = links.reduce((acc, l) => acc + l.clicks, 0);
 
   const handleSaveProduct = (product: Product) => {
-    if (editingProduct) {
-      updateProduct(product);
-      setEditingProduct(null);
-    }
+    updateProduct.mutate(product);
+    setEditingProduct(null);
   };
 
   const handleAddNewProduct = (product: Omit<Product, 'id'>) => {
-    addProduct(product);
+    addProduct.mutate(product);
     setIsAddingProduct(false);
   };
 
   const handleSaveLink = (link: LinkType) => {
-    if (editingLink) {
-      updateLink(link);
-      setEditingLink(null);
-    }
+    updateLink.mutate(link);
+    setEditingLink(null);
   };
 
   const handleAddNewLink = (link: Omit<LinkType, 'id'>) => {
-    addLink(link);
+    addLink.mutate(link);
     setIsAddingLink(false);
+  };
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && profile) {
+      uploadAvatar.mutate({ file, profileId: profile.id });
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
       
-      {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0">
         <div className="container max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -146,43 +168,66 @@ export default function Admin() {
                 <CardTitle className="text-foreground">Informações do Perfil</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-foreground">Nome</Label>
-                    <Input
-                      value={profile.name}
-                      onChange={(e) => updateProfile({ ...profile, name: e.target.value })}
-                      className="bg-secondary border-border text-foreground"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-foreground">WhatsApp (apenas números)</Label>
-                    <Input
-                      value={profile.whatsapp}
-                      onChange={(e) => updateProfile({ ...profile, whatsapp: e.target.value })}
-                      className="bg-secondary border-border text-foreground"
-                      placeholder="5511939222885"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-foreground">Bio</Label>
-                  <Textarea
-                    value={profile.bio}
-                    onChange={(e) => updateProfile({ ...profile, bio: e.target.value })}
-                    className="bg-secondary border-border text-foreground"
-                    rows={3}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-foreground">URL do Avatar</Label>
-                  <Input
-                    value={profile.avatar}
-                    onChange={(e) => updateProfile({ ...profile, avatar: e.target.value })}
-                    className="bg-secondary border-border text-foreground"
-                    placeholder="https://..."
-                  />
-                </div>
+                {profile && (
+                  <>
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="relative">
+                        {profile.avatar ? (
+                          <img src={profile.avatar} alt="" className="w-20 h-20 rounded-full object-cover border-4 border-primary" />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center">
+                            <User className="w-10 h-10 text-primary" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label className="text-foreground mb-2 block">Foto de Perfil</Label>
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                            className="hidden"
+                          />
+                          <Button variant="outline" size="sm" className="gap-2" asChild>
+                            <span>
+                              {uploadAvatar.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                              Upload Foto
+                            </span>
+                          </Button>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label className="text-foreground">Nome</Label>
+                        <Input
+                          value={profile.name}
+                          onChange={(e) => updateProfile.mutate({ ...profile, name: e.target.value })}
+                          className="bg-secondary border-border text-foreground"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-foreground">WhatsApp (apenas números)</Label>
+                        <Input
+                          value={profile.whatsapp}
+                          onChange={(e) => updateProfile.mutate({ ...profile, whatsapp: e.target.value })}
+                          className="bg-secondary border-border text-foreground"
+                          placeholder="5511939222885"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-foreground">Bio</Label>
+                      <Textarea
+                        value={profile.bio}
+                        onChange={(e) => updateProfile.mutate({ ...profile, bio: e.target.value })}
+                        className="bg-secondary border-border text-foreground"
+                        rows={3}
+                      />
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -239,12 +284,12 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={product.active}
-                              onCheckedChange={(checked) => updateProduct({ ...product, active: checked })}
+                              onCheckedChange={(checked) => updateProduct.mutate({ ...product, active: checked })}
                             />
                             <Button variant="ghost" size="icon" onClick={() => setEditingProduct(product)}>
                               <Edit2 className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => deleteProduct(product.id)} className="text-destructive hover:text-destructive">
+                            <Button variant="ghost" size="icon" onClick={() => deleteProduct.mutate(product.id)} className="text-destructive hover:text-destructive">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -297,12 +342,12 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={link.active}
-                              onCheckedChange={(checked) => updateLink({ ...link, active: checked })}
+                              onCheckedChange={(checked) => updateLink.mutate({ ...link, active: checked })}
                             />
                             <Button variant="ghost" size="icon" onClick={() => setEditingLink(link)}>
                               <Edit2 className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => deleteLink(link.id)} className="text-destructive hover:text-destructive">
+                            <Button variant="ghost" size="icon" onClick={() => deleteLink.mutate(link.id)} className="text-destructive hover:text-destructive">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -330,6 +375,10 @@ function ProductForm({
   onSave: (product: any) => void; 
   onCancel: () => void;
 }) {
+  const generateImage = useGenerateProductImage();
+  const uploadImage = useUploadProductImage();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [form, setForm] = useState({
     name: product?.name || '',
     description: product?.description || '',
@@ -344,11 +393,32 @@ function ProductForm({
     featured: product?.featured ?? false,
   });
 
+  const handleGenerateImage = async () => {
+    if (!form.name) return;
+    const imageUrl = await generateImage.mutateAsync({
+      productName: form.name,
+      productCategory: form.category,
+    });
+    if (imageUrl) {
+      setForm({ ...form, image: imageUrl });
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = await uploadImage.mutateAsync({ file, productId: product?.id });
+      if (imageUrl) {
+        setForm({ ...form, image: imageUrl });
+      }
+    }
+  };
+
   const handleSubmit = () => {
     const data = {
       ...form,
       tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
-      originalPrice: form.originalPrice || undefined,
+      originalPrice: form.originalPrice || null,
     };
     if (product) {
       onSave({ ...product, ...data });
@@ -425,25 +495,64 @@ function ProductForm({
           />
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label className="text-foreground">URL da imagem</Label>
-          <Input
-            value={form.image}
-            onChange={(e) => setForm({ ...form, image: e.target.value })}
-            className="bg-secondary border-border text-foreground"
-            placeholder="https://..."
-          />
+      
+      {/* Image Section */}
+      <div className="space-y-2">
+        <Label className="text-foreground">Imagem do Produto</Label>
+        <div className="flex gap-2 items-end">
+          {form.image && (
+            <div className="w-20 h-14 rounded bg-muted overflow-hidden">
+              <img src={form.image} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="flex-1 flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadImage.isPending}
+              className="gap-2"
+            >
+              {uploadImage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              Upload
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateImage}
+              disabled={generateImage.isPending || !form.name}
+              className="gap-2"
+            >
+              {generateImage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+              Gerar com IA
+            </Button>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label className="text-foreground">Tags (separadas por vírgula)</Label>
-          <Input
-            value={form.tags}
-            onChange={(e) => setForm({ ...form, tags: e.target.value })}
-            className="bg-secondary border-border text-foreground"
-            placeholder="Novo, Mais vendido"
-          />
-        </div>
+        <Input
+          value={form.image}
+          onChange={(e) => setForm({ ...form, image: e.target.value })}
+          className="bg-secondary border-border text-foreground"
+          placeholder="Ou cole a URL da imagem..."
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-foreground">Tags (separadas por vírgula)</Label>
+        <Input
+          value={form.tags}
+          onChange={(e) => setForm({ ...form, tags: e.target.value })}
+          className="bg-secondary border-border text-foreground"
+          placeholder="Novo, Mais vendido"
+        />
       </div>
       <div className="flex gap-2 justify-end">
         <Button variant="ghost" onClick={onCancel}>

@@ -26,9 +26,10 @@ export function useProfile() {
         .from('profiles')
         .select('*')
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) return null;
       return mapDbToProfile(data);
     },
   });
