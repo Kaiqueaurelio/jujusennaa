@@ -14,48 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      coupons: {
-        Row: {
-          active: boolean
-          code: string
-          created_at: string
-          discount_type: string
-          discount_value: number
-          expires_at: string | null
-          id: string
-          max_uses: number | null
-          min_purchase: number | null
-          updated_at: string
-          used_count: number
-        }
-        Insert: {
-          active?: boolean
-          code: string
-          created_at?: string
-          discount_type: string
-          discount_value: number
-          expires_at?: string | null
-          id?: string
-          max_uses?: number | null
-          min_purchase?: number | null
-          updated_at?: string
-          used_count?: number
-        }
-        Update: {
-          active?: boolean
-          code?: string
-          created_at?: string
-          discount_type?: string
-          discount_value?: number
-          expires_at?: string | null
-          id?: string
-          max_uses?: number | null
-          min_purchase?: number | null
-          updated_at?: string
-          used_count?: number
-        }
-        Relationships: []
-      }
       links: {
         Row: {
           active: boolean
@@ -94,35 +52,6 @@ export type Database = {
           url?: string
         }
         Relationships: []
-      }
-      product_clicks: {
-        Row: {
-          clicked_at: string
-          converted: boolean
-          id: string
-          product_id: string
-        }
-        Insert: {
-          clicked_at?: string
-          converted?: boolean
-          id?: string
-          product_id: string
-        }
-        Update: {
-          clicked_at?: string
-          converted?: boolean
-          id?: string
-          product_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_clicks_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       products: {
         Row: {
@@ -205,42 +134,15 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -367,8 +269,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
+    Enums: {},
   },
 } as const
