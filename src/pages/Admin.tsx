@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useRef, useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useSupabaseAuth } from '@/hooks/useAuth';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, useGenerateProductImage, Product } from '@/hooks/useProducts';
 import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
 import { useProfile, useUpdateProfile, useUploadAvatar, useUploadProductImage } from '@/hooks/useProfile';
@@ -12,13 +12,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import CouponsManager from '@/components/admin/CouponsManager';
 import { 
   LogOut, User, ShoppingBag, Link2, Settings, Trash2, Plus, 
-  Edit2, Save, X, BarChart3, Eye, Upload, Wand2, Loader2
+  Edit2, Save, X, BarChart3, Eye, Upload, Wand2, Loader2, Ticket
 } from 'lucide-react';
 
 export default function Admin() {
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAdmin, signOut, loading: authLoading } = useSupabaseAuth();
+  const navigate = useNavigate();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: links = [], isLoading: linksLoading } = useLinks();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -37,8 +40,43 @@ export default function Admin() {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md bg-card border-border">
+          <CardContent className="pt-6 text-center">
+            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-destructive" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Acesso Negado</h2>
+            <p className="text-muted-foreground mb-4">
+              Você não tem permissão de administrador. Solicite acesso a um administrador existente.
+            </p>
+            <Button variant="outline" onClick={() => signOut().then(() => navigate('/auth'))}>
+              Sair
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (productsLoading || linksLoading || profileLoading) {
@@ -78,6 +116,11 @@ export default function Admin() {
     }
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
@@ -89,11 +132,12 @@ export default function Admin() {
             <h1 className="text-xl font-bold text-foreground">Painel Admin</h1>
           </div>
           <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
             <a href="/" target="_blank" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">
               <Eye className="w-4 h-4" />
               Preview
             </a>
-            <Button variant="outline" size="sm" onClick={logout} className="gap-2">
+            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
               <LogOut className="w-4 h-4" />
               Sair
             </Button>
@@ -145,8 +189,12 @@ export default function Admin() {
           </Card>
         </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="bg-secondary">
+        <Tabs defaultValue="analytics" className="space-y-6">
+          <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
             <TabsTrigger value="profile" className="gap-2">
               <User className="w-4 h-4" />
               Perfil
@@ -159,7 +207,16 @@ export default function Admin() {
               <Link2 className="w-4 h-4" />
               Links
             </TabsTrigger>
+            <TabsTrigger value="coupons" className="gap-2">
+              <Ticket className="w-4 h-4" />
+              Cupons
+            </TabsTrigger>
           </TabsList>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
+          </TabsContent>
 
           {/* Profile Tab */}
           <TabsContent value="profile">
@@ -358,6 +415,11 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Coupons Tab */}
+          <TabsContent value="coupons">
+            <CouponsManager />
           </TabsContent>
         </Tabs>
       </main>
