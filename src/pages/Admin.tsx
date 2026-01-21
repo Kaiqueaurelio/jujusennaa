@@ -4,6 +4,7 @@ import { useSupabaseAuth } from '@/hooks/useAuth';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, useGenerateProductImage, Product } from '@/hooks/useProducts';
 import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
 import { useProfile, useUpdateProfile, useUploadAvatar, useUploadProductImage } from '@/hooks/useProfile';
+import { useSendPushNotification } from '@/hooks/useSendPush';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +35,7 @@ export default function Admin() {
   const deleteLink = useDeleteLink();
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
+  const sendPush = useSendPushNotification();
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingLink, setEditingLink] = useState<LinkType | null>(null);
@@ -95,7 +97,16 @@ export default function Admin() {
   };
 
   const handleAddNewProduct = (product: Omit<Product, 'id'>) => {
-    addProduct.mutate(product);
+    addProduct.mutate(product, {
+      onSuccess: (newProduct) => {
+        // Send push notification for new product
+        sendPush.mutate({
+          title: '🚀 Novo Produto Disponível!',
+          body: `${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`,
+          url: '/'
+        });
+      }
+    });
     setIsAddingProduct(false);
   };
 
@@ -676,7 +687,7 @@ function LinkForm({
             onChange={(e) => setForm({ ...form, category: e.target.value as any })}
             className="w-full h-10 px-3 rounded-md bg-secondary border border-border text-foreground"
           >
-            <option value="content">Conteúdo</option>
+            <option value="content">Links</option>
             <option value="social">Redes Sociais</option>
             <option value="store">Loja</option>
           </select>

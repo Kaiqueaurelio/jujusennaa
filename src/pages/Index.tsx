@@ -2,6 +2,7 @@ import { HeaderProfile } from '@/components/HeaderProfile';
 import { LinksSection } from '@/components/LinksSection';
 import { ProductSection } from '@/components/ProductSection';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
+import { NotificationBell } from '@/components/NotificationBell';
 import { Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -35,15 +36,17 @@ const Index = () => {
       </div>
       
       <div className="relative z-10 container max-w-2xl mx-auto px-4 py-8 pb-24">
-        {/* Admin link with animation */}
+        {/* Top right controls */}
         <motion.div
+          className="absolute top-4 right-4 flex items-center gap-2"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.3 }}
         >
+          <NotificationBell />
           <Link 
             to="/admin" 
-            className="absolute top-4 right-4 p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-all hover:scale-110 hover:rotate-90 duration-300"
+            className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-all hover:scale-110 hover:rotate-90 duration-300"
             aria-label="Admin"
           >
             <Settings className="w-5 h-5 text-muted-foreground" />
