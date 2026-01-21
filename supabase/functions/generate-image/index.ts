@@ -25,7 +25,21 @@ Deno.serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const prompt = `Create a professional product cover for "${productName}" (${productCategory || 'Digital'}). Dark background, vibrant gradients, minimalist, Netflix-style premium aesthetic. 16:9.`;
+    const prompt = `Professional high-end product photography for a digital product called "${productName}" in the ${productCategory || 'Digital'} category. 
+
+Style requirements:
+- Hyper-realistic 3D render with cinematic lighting
+- Deep rich dark background with subtle gradient (dark navy to black)
+- Dramatic rim lighting highlighting the product edges
+- Elegant floating elements like subtle particles, light rays, or abstract geometric shapes
+- Premium luxury brand aesthetic similar to Apple or Netflix marketing
+- Sharp focus with professional depth of field
+- Color palette: deep blacks, rich crimsons, warm gold accents
+- Modern minimalist composition with strong visual hierarchy
+- Photorealistic textures and materials
+- 16:9 aspect ratio, 4K quality appearance
+
+The image should look like a premium marketing asset for a high-end digital product, NOT like AI-generated art. Focus on photorealism and professional product photography aesthetics.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
