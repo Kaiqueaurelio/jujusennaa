@@ -31,7 +31,7 @@ export function LinksSection() {
         <section>
           <div className="flex items-center gap-3 mb-4">
             <Link2 className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Conteúdo Gratuito</h2>
+            <h2 className="text-lg font-semibold text-foreground">Links</h2>
           </div>
           <div className="space-y-3">
             {contentLinks.map((link, index) => (
