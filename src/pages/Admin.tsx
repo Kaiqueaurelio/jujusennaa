@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, useGenerateProductImage, Product } from '@/hooks/useProducts';
 import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
 import { useProfile, useUpdateProfile, useUploadAvatar, useUploadProductImage } from '@/hooks/useProfile';
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 export default function Admin() {
-  const { user, isAdmin, signOut, loading: authLoading } = useSupabaseAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: links = [], isLoading: linksLoading } = useLinks();
@@ -42,43 +42,8 @@ export default function Admin() {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md bg-card border-border">
-          <CardContent className="pt-6 text-center">
-            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <X className="w-8 h-8 text-destructive" />
-            </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">Acesso Negado</h2>
-            <p className="text-muted-foreground mb-4">
-              Você não tem permissão de administrador. Solicite acesso a um administrador existente.
-            </p>
-            <Button variant="outline" onClick={() => signOut().then(() => navigate('/auth'))}>
-              Sair
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
   }
 
   if (productsLoading || linksLoading || profileLoading) {
@@ -127,8 +92,8 @@ export default function Admin() {
     }
   };
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
     navigate('/auth');
   };
 
@@ -143,7 +108,7 @@ export default function Admin() {
             <h1 className="text-xl font-bold text-foreground">Painel Admin</h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+            <span className="text-sm text-muted-foreground hidden sm:block">Administrador</span>
             <a href="/" target="_blank" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">
               <Eye className="w-4 h-4" />
               Preview
