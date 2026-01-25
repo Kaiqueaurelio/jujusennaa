@@ -3,95 +3,87 @@ import { LinksSection } from '@/components/LinksSection';
 import { ProductSection } from '@/components/ProductSection';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
 import { NotificationBell } from '@/components/NotificationBell';
-import { Settings } from 'lucide-react';
+import { Settings, Search, MoreVertical, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      {/* Animated background elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-            x: [0, 50, 0],
-            y: [0, 30, 0]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div 
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-            x: [0, -30, 0],
-            y: [0, -50, 0]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-      </div>
-      
-      <div className="relative z-10 container max-w-2xl mx-auto px-4 py-8 pb-24">
-        {/* Top right controls */}
-        <motion.div
-          className="absolute top-4 right-4 flex items-center gap-2"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.3 }}
-        >
-          <NotificationBell />
-          <Link 
-            to="/admin" 
-            className="p-2 rounded-full bg-secondary hover:bg-secondary/80 transition-all hover:scale-110 hover:rotate-90 duration-300"
-            aria-label="Admin"
-          >
-            <Settings className="w-5 h-5 text-muted-foreground" />
-          </Link>
-        </motion.div>
+    <div className="min-h-screen bg-background">
+      {/* Netflix-style Header */}
+      <motion.header 
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-background via-background/80 to-transparent"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-4">
+            <Menu className="w-6 h-6 text-foreground" />
+            <motion.h1 
+              className="text-2xl font-bold text-primary tracking-tight"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              DECODE
+            </motion.h1>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Search className="w-5 h-5 text-foreground" />
+            <NotificationBell />
+            <Link 
+              to="/admin" 
+              className="p-1"
+              aria-label="Admin"
+            >
+              <MoreVertical className="w-5 h-5 text-foreground" />
+            </Link>
+          </div>
+        </div>
+      </motion.header>
 
-        <motion.div 
-          className="space-y-10"
+      <div className="pt-16 pb-24">
+        {/* Profile Section - Hero Style */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6 }}
+          className="px-4 py-6"
         >
+          <HeaderProfile />
+        </motion.div>
+
+        {/* Netflix-style Content Sections */}
+        <div className="space-y-6">
+          {/* Links Section */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6 }}
-          >
-            <HeaderProfile />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
             <LinksSection />
           </motion.div>
           
+          {/* Products Section - Netflix Grid */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
             <ProductSection />
           </motion.div>
-        </motion.div>
+        </div>
 
-        {/* Footer with animation */}
+        {/* Footer */}
         <motion.footer 
-          className="mt-16 text-center"
+          className="mt-12 text-center px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Decode Analytics
           </p>
         </motion.footer>

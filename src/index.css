@@ -93,13 +93,11 @@
 
 @layer components {
   .netflix-card {
-    @apply bg-card rounded-lg overflow-hidden transition-all duration-300 ease-out;
-    box-shadow: var(--shadow-card);
+    @apply bg-card rounded-md overflow-hidden transition-all duration-300 ease-out;
   }
 
   .netflix-card:hover {
-    @apply scale-105;
-    box-shadow: var(--shadow-hover);
+    @apply ring-1 ring-foreground/20;
   }
 
   .gradient-text {
@@ -119,6 +117,16 @@
   .btn-primary-glow:hover {
     @apply brightness-110;
     box-shadow: 0 0 40px hsl(357 91% 47% / 0.5);
+  }
+
+  /* Hide scrollbar for Netflix-style horizontal scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
