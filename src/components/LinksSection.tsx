@@ -1,59 +1,75 @@
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useLinks } from '@/hooks/useLinks';
 import { LinkCard } from './LinkCard';
-import { Link2, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function LinksSection() {
   const { data: links, isLoading } = useLinks();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -250 : 250;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-secondary/50 rounded-xl animate-pulse" />
-        ))}
+      <div className="space-y-3 px-4">
+        <div className="h-6 w-24 bg-secondary/50 rounded animate-pulse" />
+        <div className="flex gap-3 overflow-hidden">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="w-[200px] h-24 bg-secondary/50 rounded-lg animate-pulse flex-shrink-0" />
+          ))}
+        </div>
       </div>
     );
   }
 
   const activeLinks = links?.filter(l => l.active).sort((a, b) => a.order - b.order) || [];
-  const contentLinks = activeLinks.filter(l => l.category === 'content');
-  const socialLinks = activeLinks.filter(l => l.category === 'social' || l.category === 'store');
+  
+  if (activeLinks.length === 0) return null;
 
   return (
-    <motion.div 
-      className="space-y-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-    >
-      {contentLinks.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-4">
-            <Link2 className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Links</h2>
-          </div>
-          <div className="space-y-3">
-            {contentLinks.map((link, index) => (
-              <LinkCard key={link.id} link={link} index={index} />
-            ))}
-          </div>
-        </section>
-      )}
+    <section className="relative">
+      <h2 className="text-lg font-semibold text-foreground px-4 mb-3">
+        Links
+      </h2>
+      
+      <div className="relative group">
+        {/* Left Arrow */}
+        <motion.button
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-full bg-gradient-to-r from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-start"
+          onClick={() => scroll('left')}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <ChevronLeft className="w-6 h-6 text-foreground" />
+        </motion.button>
 
-      {socialLinks.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-4">
-            <Share2 className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Redes Sociais</h2>
-          </div>
-          <div className="space-y-3">
-            {socialLinks.map((link, index) => (
-              <LinkCard key={link.id} link={link} index={index} />
-            ))}
-          </div>
-        </section>
-      )}
-    </motion.div>
+        {/* Scrollable Container */}
+        <div 
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto scrollbar-hide px-4 scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {activeLinks.map((link, index) => (
+            <LinkCard key={link.id} link={link} index={index} />
+          ))}
+        </div>
+
+        {/* Right Arrow */}
+        <motion.button
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-full bg-gradient-to-l from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end"
+          onClick={() => scroll('right')}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <ChevronRight className="w-6 h-6 text-foreground" />
+        </motion.button>
+      </div>
+    </section>
   );
 }

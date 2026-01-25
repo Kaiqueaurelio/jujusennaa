@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link, useIncrementLinkClick } from '@/hooks/useLinks';
-import { ExternalLink, Palette, BookOpen, Globe, Instagram, MessageCircle, Youtube, Twitter, Linkedin, Github, Music, Mail, Phone, Link2, FileText, Video, Camera, Mic, Headphones, Zap, Star, Heart, Award, Target, Rocket, Coffee, Code, Database, Cloud, Lock, Settings, Users, ShoppingBag, CreditCard, Gift, Calendar, Clock, Bell, Bookmark, Download, Upload, Share2, Send, MessageSquare, Search, Filter, Layout, Grid, List, Menu, MoreHorizontal, ChevronRight } from 'lucide-react';
+import { ExternalLink, Palette, BookOpen, Globe, Instagram, MessageCircle, Youtube, Twitter, Linkedin, Github, Music, Mail, Phone, Link2, FileText, Video, Camera, Mic, Headphones, Zap, Star, Heart, Award, Target, Rocket, Coffee, Code, Database, Cloud, Lock, Settings, Users, ShoppingBag, CreditCard, Gift, Calendar, Clock, Bell, Bookmark, Download, Upload, Share2, Send, MessageSquare, Search, Filter, Layout, Grid, List, Menu, MoreHorizontal, Play } from 'lucide-react';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Palette, BookOpen, Globe, Instagram, MessageCircle, ExternalLink,
@@ -9,7 +9,17 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Award, Target, Rocket, Coffee, Code, Database, Cloud, Lock,
   Settings, Users, ShoppingBag, CreditCard, Gift, Calendar, Clock,
   Bell, Bookmark, Download, Upload, Share2, Send, MessageSquare,
-  Search, Filter, Layout, Grid, List, Menu, MoreHorizontal, ChevronRight
+  Search, Filter, Layout, Grid, List, Menu, MoreHorizontal, Play
+};
+
+// Generate colors based on category
+const getCategoryColor = (category: string): string => {
+  const colors: Record<string, string> = {
+    'content': 'from-blue-600 to-blue-800',
+    'social': 'from-pink-600 to-purple-800',
+    'store': 'from-green-600 to-teal-800',
+  };
+  return colors[category] || 'from-primary to-primary/70';
 };
 
 interface LinkCardProps {
@@ -31,83 +41,60 @@ export function LinkCard({ link, index = 0 }: LinkCardProps) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className="group block w-full netflix-card p-4 hover:border-primary/50 border border-transparent transition-all duration-300 relative overflow-hidden"
-      initial={{ opacity: 0, x: -30, scale: 0.95 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
+      className="relative block flex-shrink-0 w-[200px] sm:w-[220px] group"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ 
-        duration: 0.5, 
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100
+        duration: 0.4, 
+        delay: index * 0.08,
       }}
       whileHover={{ 
-        scale: 1.02, 
-        x: 8,
+        scale: 1.05, 
         transition: { duration: 0.2 }
       }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* Animated background gradient on hover */}
-      <motion.div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: 'linear-gradient(90deg, hsl(357 91% 47% / 0.1) 0%, transparent 100%)'
-        }}
-      />
-      
-      {/* Shimmer effect */}
-      <motion.div
-        className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-        style={{
-          background: 'linear-gradient(90deg, transparent, hsl(357 91% 47% / 0.1), transparent)'
-        }}
-      />
-      
-      <div className="flex items-center gap-4 relative z-10">
-        <motion.div 
-          className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors relative"
-          whileHover={{ rotate: [0, -10, 10, 0] }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Glow ring */}
-          <motion.div
-            className="absolute inset-0 rounded-xl"
-            animate={{
-              boxShadow: [
-                '0 0 0 0 hsl(357 91% 47% / 0)',
-                '0 0 0 4px hsl(357 91% 47% / 0.2)',
-                '0 0 0 0 hsl(357 91% 47% / 0)'
-              ]
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <Icon className="w-5 h-5 text-primary" />
-        </motion.div>
+      {/* Card Container */}
+      <div className={`relative h-24 rounded-lg overflow-hidden bg-gradient-to-br ${getCategoryColor(link.category)}`}>
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)',
+          backgroundSize: '20px 20px'
+        }} />
         
-        <div className="flex-1 min-w-0">
-          <motion.span 
-            className="block font-semibold text-foreground group-hover:text-primary transition-colors truncate"
-            layout
-          >
-            {link.title}
-          </motion.span>
-          <span className="text-xs text-muted-foreground truncate block">
-            {new URL(link.url).hostname.replace('www.', '')}
-          </span>
+        {/* Content */}
+        <div className="relative h-full p-4 flex flex-col justify-between">
+          <div className="flex items-start justify-between">
+            <div className="w-10 h-10 rounded-full bg-foreground/20 backdrop-blur-sm flex items-center justify-center">
+              <Icon className="w-5 h-5 text-foreground" />
+            </div>
+            <motion.div
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              whileHover={{ scale: 1.1 }}
+            >
+              <div className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center">
+                <Play className="w-3 h-3 text-background fill-background ml-0.5" />
+              </div>
+            </motion.div>
+          </div>
+          
+          <div>
+            <h3 className="text-foreground font-semibold text-sm truncate">
+              {link.title}
+            </h3>
+            <p className="text-foreground/70 text-xs truncate">
+              {new URL(link.url).hostname.replace('www.', '')}
+            </p>
+          </div>
         </div>
-        
+
+        {/* Hover Glow Effect */}
         <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          whileHover={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-1"
-        >
-          <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <ChevronRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-          </motion.div>
-        </motion.div>
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+          style={{
+            boxShadow: 'inset 0 0 30px rgba(255,255,255,0.1)'
+          }}
+        />
       </div>
     </motion.a>
   );
