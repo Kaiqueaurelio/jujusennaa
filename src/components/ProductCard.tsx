@@ -13,10 +13,18 @@ export function ProductCard({ product, onClick, index = 0, variant = 'poster' }:
   if (variant === 'featured') {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: index * 0.1 }}
-        whileHover={{ scale: 1.02 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ 
+          duration: 0.6, 
+          delay: index * 0.15,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }}
+        whileHover={{ 
+          scale: 1.03,
+          y: -8,
+          transition: { duration: 0.3, ease: 'easeOut' }
+        }}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
         className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group flex-shrink-0 w-[280px] sm:w-[320px]"
@@ -91,13 +99,18 @@ export function ProductCard({ product, onClick, index = 0, variant = 'poster' }:
   // Poster variant (vertical cards like Netflix's "Minha Lista")
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+      initial={{ opacity: 0, scale: 0.9, y: 15 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ 
+        duration: 0.5, 
+        delay: index * 0.08,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
       whileHover={{ 
-        scale: 1.08,
+        scale: 1.1,
+        y: -10,
         zIndex: 10,
-        transition: { duration: 0.2 }
+        transition: { duration: 0.25, ease: 'easeOut' }
       }}
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
@@ -123,11 +136,18 @@ export function ProductCard({ product, onClick, index = 0, variant = 'poster' }:
         className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       />
 
-      {/* Netflix Logo Badge (for featured items) */}
+      {/* Featured indicator glow effect */}
       {product.featured && (
-        <div className="absolute top-2 left-2 bg-primary px-1.5 py-0.5 rounded-sm">
-          <span className="text-[10px] font-bold text-primary-foreground tracking-wider">N</span>
-        </div>
+        <motion.div 
+          className="absolute top-2 left-2 w-2 h-2 rounded-full bg-primary"
+          animate={{ 
+            boxShadow: [
+              '0 0 0 0 hsl(357 91% 47% / 0.4)',
+              '0 0 0 6px hsl(357 91% 47% / 0)',
+            ]
+          }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
       )}
 
       {/* Bottom gradient for title */}

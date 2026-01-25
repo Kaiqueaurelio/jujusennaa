@@ -42,15 +42,17 @@ export function LinkCard({ link, index = 0 }: LinkCardProps) {
       rel="noopener noreferrer"
       onClick={handleClick}
       className="relative block flex-shrink-0 w-[200px] sm:w-[220px] group"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ 
-        duration: 0.4, 
-        delay: index * 0.08,
+        duration: 0.5, 
+        delay: index * 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94]
       }}
       whileHover={{ 
         scale: 1.05, 
-        transition: { duration: 0.2 }
+        y: -5,
+        transition: { duration: 0.25, ease: 'easeOut' }
       }}
       whileTap={{ scale: 0.98 }}
     >
