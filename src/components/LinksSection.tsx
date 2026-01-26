@@ -34,40 +34,59 @@ export function LinksSection() {
 
   return (
     <section className="relative">
-      <h2 className="text-lg font-semibold text-foreground px-4 mb-3">
+      <motion.h2 
+        className="text-lg font-semibold text-foreground px-4 mb-3"
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         Links
-      </h2>
+      </motion.h2>
       
       <div className="relative group">
         {/* Left Arrow */}
         <motion.button
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-full bg-gradient-to-r from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-start"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-full bg-gradient-to-r from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-start"
           onClick={() => scroll('left')}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <ChevronLeft className="w-6 h-6 text-foreground" />
+          <ChevronLeft className="w-7 h-7 text-foreground" />
         </motion.button>
 
         {/* Scrollable Container */}
         <div 
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide px-4 scroll-smooth"
+          className="flex gap-3 overflow-x-auto scrollbar-hide px-4 scroll-smooth snap-x snap-mandatory"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {activeLinks.map((link, index) => (
-            <LinkCard key={link.id} link={link} index={index} />
+            <motion.div
+              key={link.id}
+              className="snap-start"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-20px" }}
+              transition={{ 
+                delay: index * 0.08,
+                duration: 0.5,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+            >
+              <LinkCard link={link} index={index} />
+            </motion.div>
           ))}
         </div>
 
         {/* Right Arrow */}
         <motion.button
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-full bg-gradient-to-l from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-full bg-gradient-to-l from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end"
           onClick={() => scroll('right')}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <ChevronRight className="w-6 h-6 text-foreground" />
+          <ChevronRight className="w-7 h-7 text-foreground" />
         </motion.button>
       </div>
     </section>
