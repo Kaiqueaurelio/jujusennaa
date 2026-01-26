@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { HeaderProfile } from '@/components/HeaderProfile';
 import { LinksSection } from '@/components/LinksSection';
 import { ProductSection } from '@/components/ProductSection';
+import { AdsSection } from '@/components/AdsSection';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
@@ -86,6 +87,15 @@ const Index = () => {
             transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
           >
             <LinksSection />
+          </motion.div>
+          
+          {/* Ads Section - Carousel */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6, ease: 'easeOut' }}
+          >
+            <AdsSection />
           </motion.div>
           
           {/* Products Section - Netflix Grid */}
