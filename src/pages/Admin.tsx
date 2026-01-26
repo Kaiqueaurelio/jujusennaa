@@ -15,9 +15,10 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 import CouponsManager from '@/components/admin/CouponsManager';
+import { AdsManager } from '@/components/admin/AdsManager';
 import { 
   LogOut, User, ShoppingBag, Link2, Settings, Trash2, Plus, 
-  Edit2, Save, X, BarChart3, Eye, Upload, Wand2, Loader2, Ticket
+  Edit2, Save, X, BarChart3, Eye, Upload, Wand2, Loader2, Ticket, Megaphone
 } from 'lucide-react';
 
 export default function Admin() {
@@ -186,6 +187,10 @@ export default function Admin() {
             <TabsTrigger value="coupons" className="gap-2">
               <Ticket className="w-4 h-4" />
               Cupons
+            </TabsTrigger>
+            <TabsTrigger value="ads" className="gap-2">
+              <Megaphone className="w-4 h-4" />
+              Anúncios
             </TabsTrigger>
           </TabsList>
 
@@ -396,6 +401,11 @@ export default function Admin() {
           {/* Coupons Tab */}
           <TabsContent value="coupons">
             <CouponsManager />
+          </TabsContent>
+
+          {/* Ads Tab */}
+          <TabsContent value="ads">
+            <AdsManager />
           </TabsContent>
         </Tabs>
       </main>
