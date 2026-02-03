@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Megaphone, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAds } from '@/hooks/useAds';
+import { AdCarouselSkeleton } from '@/components/SkeletonLoaders';
 
-// Import ad images
+// Import fallback ad images
 import adZonaFazedor from '@/assets/ad-zona-fazedor.jpeg';
 import adFerramentas from '@/assets/ad-ferramentas.jpeg';
 import adSocialMedia from '@/assets/ad-social-media.jpeg';
@@ -13,68 +15,93 @@ interface AdSlide {
   image: string;
   title: string;
   link: string;
+  advertiser: string;
 }
 
-const staticAds: AdSlide[] = [
+// Fallback static ads when no ads in database
+const fallbackAds: AdSlide[] = [
   {
-    id: '1',
+    id: 'fallback-1',
     image: adZonaFazedor,
     title: 'Zona do Fazedor',
-    link: 'https://pay.kiwify.com.br/HlJSYEV'
+    link: 'https://pay.kiwify.com.br/HlJSYEV',
+    advertiser: 'Zona do Fazedor'
   },
   {
-    id: '2',
+    id: 'fallback-2',
     image: adFerramentas,
     title: 'Ferramentas & Ebooks',
-    link: 'https://pay.kiwify.com.br/HlJSYEV'
+    link: 'https://pay.kiwify.com.br/HlJSYEV',
+    advertiser: 'Zona do Fazedor'
   },
   {
-    id: '3',
+    id: 'fallback-3',
     image: adSocialMedia,
     title: 'Social Media & Photoshop',
-    link: 'https://pay.kiwify.com.br/HlJSYEV'
+    link: 'https://pay.kiwify.com.br/HlJSYEV',
+    advertiser: 'Zona do Fazedor'
   }
 ];
 
 export function AdsSection() {
+  const { data: dbAds, isLoading, error } = useAds();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Use database ads if available, otherwise fallback
+  const ads: AdSlide[] = dbAds && dbAds.length > 0 
+    ? dbAds.filter(ad => ad.active).map(ad => ({
+        id: ad.id,
+        image: ad.image_url || adZonaFazedor,
+        title: ad.title,
+        link: ad.link_url,
+        advertiser: ad.advertiser_name
+      }))
+    : fallbackAds;
+
   // Auto-rotate ads every 4 seconds
   useEffect(() => {
-    if (staticAds.length <= 1 || isPaused) return;
+    if (ads.length <= 1 || isPaused) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % staticAds.length);
+      setCurrentIndex(prev => (prev + 1) % ads.length);
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [ads.length, isPaused]);
 
   // Scroll to current slide
   useEffect(() => {
-    if (scrollRef.current) {
-      const slideWidth = scrollRef.current.scrollWidth / staticAds.length;
+    if (scrollRef.current && ads.length > 0) {
+      const slideWidth = scrollRef.current.scrollWidth / ads.length;
       scrollRef.current.scrollTo({
         left: currentIndex * slideWidth,
         behavior: 'smooth'
       });
     }
-  }, [currentIndex]);
+  }, [currentIndex, ads.length]);
 
   const goToPrevious = () => {
-    setCurrentIndex(prev => (prev - 1 + staticAds.length) % staticAds.length);
+    setCurrentIndex(prev => (prev - 1 + ads.length) % ads.length);
   };
 
   const goToNext = () => {
-    setCurrentIndex(prev => (prev + 1) % staticAds.length);
+    setCurrentIndex(prev => (prev + 1) % ads.length);
   };
 
   const handleContactClick = () => {
     const message = encodeURIComponent('Olá! Tenho interesse em anunciar na sua plataforma. Poderia me passar mais informações?');
     window.open(`https://wa.me/5511939222885?text=${message}`, '_blank');
   };
+
+  if (isLoading) {
+    return <AdCarouselSkeleton />;
+  }
+
+  if (ads.length === 0) {
+    return null;
+  }
 
   return (
     <section className="relative">
@@ -108,7 +135,7 @@ export function AdsSection() {
           className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {staticAds.map((ad, index) => (
+          {ads.map((ad, index) => (
             <motion.a
               key={ad.id}
               href={ad.link}
@@ -140,9 +167,14 @@ export function AdsSection() {
                   initial={{ y: 20 }}
                   whileHover={{ y: 0 }}
                 >
-                  <span className="text-lg font-bold text-foreground drop-shadow-lg">
-                    {ad.title}
-                  </span>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-primary/80 font-medium block">
+                      {ad.advertiser}
+                    </span>
+                    <span className="text-lg font-bold text-foreground drop-shadow-lg">
+                      {ad.title}
+                    </span>
+                  </div>
                   <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                     <ExternalLink className="w-5 h-5 text-primary-foreground" />
                   </div>
@@ -160,26 +192,30 @@ export function AdsSection() {
         </div>
 
         {/* Navigation arrows */}
-        <motion.button
-          onClick={goToPrevious}
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 shadow-lg"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <ChevronLeft className="w-6 h-6 text-foreground" />
-        </motion.button>
-        <motion.button
-          onClick={goToNext}
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 shadow-lg"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <ChevronRight className="w-6 h-6 text-foreground" />
-        </motion.button>
+        {ads.length > 1 && (
+          <>
+            <motion.button
+              onClick={goToPrevious}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 shadow-lg"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <ChevronLeft className="w-6 h-6 text-foreground" />
+            </motion.button>
+            <motion.button
+              onClick={goToNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 shadow-lg"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <ChevronRight className="w-6 h-6 text-foreground" />
+            </motion.button>
+          </>
+        )}
 
         {/* Dots indicator */}
         <div className="flex justify-center gap-2 mt-4">
-          {staticAds.map((_, index) => (
+          {ads.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}

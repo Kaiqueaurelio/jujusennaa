@@ -8,40 +8,62 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
 import { Search, MoreVertical, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { scrollY } = useScroll();
-  const headerOpacity = useTransform(scrollY, [0, 100], [0, 1]);
-
-  // Detect scroll for header background
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  
+  // Parallax transforms with spring physics
+  const smoothScrollY = useSpring(scrollY, { stiffness: 100, damping: 30 });
+  
+  // Header parallax effects
+  const headerY = useTransform(smoothScrollY, [0, 200], [0, -30]);
+  const headerScale = useTransform(smoothScrollY, [0, 200], [1, 0.95]);
+  const headerOpacity = useTransform(smoothScrollY, [0, 100], [1, 0.9]);
+  const headerBlur = useTransform(smoothScrollY, [0, 100], [0, 10]);
+  const headerBgOpacity = useTransform(smoothScrollY, [0, 80], [0, 0.95]);
+  
+  // Logo parallax
+  const logoScale = useTransform(smoothScrollY, [0, 150], [1, 0.85]);
+  const logoY = useTransform(smoothScrollY, [0, 150], [0, -5]);
+  
+  // Profile section parallax
+  const profileY = useTransform(smoothScrollY, [0, 300], [0, -50]);
+  const profileScale = useTransform(smoothScrollY, [0, 300], [1, 0.9]);
+  const profileOpacity = useTransform(smoothScrollY, [0, 200], [1, 0.7]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden">
       {/* Mobile Menu */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
-      {/* Netflix-style Header with scroll effect */}
+      {/* Parallax Header with enhanced effects */}
       <motion.header 
-        className={`fixed top-0 left-0 right-0 z-40 transition-colors duration-300 ${
-          scrolled ? 'bg-background/95 backdrop-blur-md shadow-lg' : 'bg-gradient-to-b from-background via-background/80 to-transparent'
-        }`}
+        className="fixed top-0 left-0 right-0 z-40"
+        style={{
+          y: headerY,
+          scale: headerScale,
+        }}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
       >
-        <div className="flex items-center justify-between px-4 py-3">
+        {/* Dynamic background */}
+        <motion.div 
+          className="absolute inset-0 bg-background/95 backdrop-blur-md shadow-lg"
+          style={{ opacity: headerBgOpacity }}
+        />
+        
+        {/* Gradient overlay for initial state */}
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none"
+          style={{ opacity: useTransform(smoothScrollY, [0, 80], [1, 0]) }}
+        />
+        
+        <div className="relative flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
             <motion.button
               onClick={() => setIsMenuOpen(true)}
@@ -52,7 +74,11 @@ const Index = () => {
               <Menu className="w-6 h-6 text-foreground" />
             </motion.button>
             <motion.h1 
-              className="text-2xl font-bold text-primary tracking-tight"
+              className="text-2xl font-bold text-primary tracking-tight origin-left"
+              style={{
+                scale: logoScale,
+                y: logoY,
+              }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, type: 'spring' }}
@@ -85,8 +111,13 @@ const Index = () => {
 
       {/* Main content with smooth scroll */}
       <div className="pt-16 pb-24">
-        {/* Profile Section - Hero Style */}
+        {/* Profile Section with Parallax */}
         <motion.div
+          style={{
+            y: profileY,
+            scale: profileScale,
+            opacity: profileOpacity,
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
