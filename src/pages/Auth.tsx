@@ -1,42 +1,51 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSupabaseAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, User, AlertCircle, Loader2, Shield } from 'lucide-react';
+import { Lock, Mail, AlertCircle, Loader2, Shield } from 'lucide-react';
 
 export default function Auth() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { isAuthenticated, login } = useAuth();
+  const { user, loading: authLoading, isAdmin, signIn } = useSupabaseAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user && isAdmin) {
       navigate('/admin');
     }
-  }, [isAuthenticated, navigate]);
+  }, [user, isAdmin, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate a brief delay for UX
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const success = login(username, password);
+    const { error: signInError } = await signIn(email, password);
     setLoading(false);
 
-    if (!success) {
-      setError('Usuário ou senha incorretos');
+    if (signInError) {
+      if (signInError.message.includes('Invalid login credentials')) {
+        setError('Email ou senha incorretos');
+      } else {
+        setError(signInError.message);
+      }
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -47,7 +56,7 @@ export default function Auth() {
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">Login Admin</CardTitle>
           <CardDescription className="text-muted-foreground">
             Acesse sua conta de administrador
           </CardDescription>
@@ -55,18 +64,18 @@ export default function Auth() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-foreground">Usuário</Label>
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 bg-secondary border-border text-foreground"
-                  placeholder="Seu usuário"
+                  placeholder="seu@email.com"
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                 />
               </div>
             </div>

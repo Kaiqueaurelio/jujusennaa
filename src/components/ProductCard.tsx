@@ -30,6 +30,8 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
     window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
   };
 
+  const isFeatured = product.featured;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9, y: 15 }}
@@ -42,14 +44,35 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
       className="flex-shrink-0 w-[260px] sm:w-[280px]"
     >
       <div 
-        className="relative rounded-2xl overflow-hidden bg-card border border-border/50 group cursor-pointer"
+        className={`relative rounded-2xl overflow-hidden bg-card border group cursor-pointer ${
+          isFeatured 
+            ? 'border-transparent' 
+            : 'border-border/50'
+        }`}
         style={{
-          boxShadow: '0 0 20px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
+          boxShadow: isFeatured
+            ? '0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
+            : '0 0 20px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
         }}
       >
+        {/* Animated neon border for featured products */}
+        {isFeatured && (
+          <>
+            <div 
+              className="absolute inset-0 rounded-2xl z-0"
+              style={{
+                background: 'linear-gradient(90deg, #8b5cf6, #d946ef, #06b6d4, #8b5cf6)',
+                backgroundSize: '300% 100%',
+                animation: 'neonBorderFlow 3s linear infinite',
+                padding: '2px',
+              }}
+            />
+            <div className="absolute inset-[2px] rounded-2xl bg-card z-0" />
+          </>
+        )}
         {/* Image Container with Neon Effect */}
         <div 
-          className="relative aspect-square overflow-hidden"
+          className="relative aspect-square overflow-hidden z-[1]"
           onClick={onClick}
         >
           {/* Purple/Neon glow effect on the image area */}
@@ -100,7 +123,7 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
         </div>
 
         {/* Product Info */}
-        <div className="p-4 space-y-3">
+        <div className="relative z-[1] p-4 space-y-3">
           {/* Title */}
           <h3 className="font-semibold text-foreground text-base line-clamp-2 min-h-[48px]">
             {product.name}
