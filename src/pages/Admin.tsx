@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSupabaseAuth } from '@/hooks/useAuth';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, useGenerateProductImage, Product } from '@/hooks/useProducts';
 import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
 import { useProfile, useUpdateProfile, useUploadAvatar, useUploadProductImage } from '@/hooks/useProfile';
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export default function Admin() {
-  const { isAuthenticated, logout } = useAuth();
+  const { user, loading: authLoading, isAdmin, signOut } = useSupabaseAuth();
   const navigate = useNavigate();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: links = [], isLoading: linksLoading } = useLinks();
@@ -43,7 +43,15 @@ export default function Admin() {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
 
-  if (!isAuthenticated) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
     return <Navigate to="/auth" replace />;
   }
 
@@ -93,8 +101,8 @@ export default function Admin() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/auth');
   };
 
