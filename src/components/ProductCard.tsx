@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Product } from '@/hooks/useProducts';
 import { Eye, MessageCircle } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
+import { getProductImage } from '@/data/productImages';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +21,7 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
   const { data: profile } = useProfile();
   
   const badge = getBadge(product);
+  const productImage = getProductImage(product.image);
   
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,9 +80,9 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
           {/* Purple/Neon glow effect on the image area */}
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-background/50 pointer-events-none z-10" />
           
-          {product.image ? (
+          {productImage ? (
             <img 
-              src={product.image} 
+              src={productImage} 
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />

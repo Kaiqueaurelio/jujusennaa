@@ -15,14 +15,22 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   
-  const { user, loading: authLoading, isAdmin, signIn, signUp } = useSupabaseAuth();
+  const { user, loading: authLoading, isAdmin, signIn, signUp, checkAdminRole } = useSupabaseAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user) {
+      // Re-check admin role when user changes
+      checkAdminRole(user.id);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // Navigate only after isAdmin is confirmed
+    if (user && isAdmin && !authLoading) {
       navigate('/admin');
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
