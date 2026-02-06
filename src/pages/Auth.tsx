@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupabaseAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -17,20 +17,22 @@ export default function Auth() {
   
   const { user, loading: authLoading, isAdmin, signIn, signUp, checkAdminRole } = useSupabaseAuth();
   const navigate = useNavigate();
+  const adminCheckRef = useRef(false);
 
+  // Check admin role once when user is detected
   useEffect(() => {
-    if (user) {
-      // Re-check admin role when user changes
+    if (user && !adminCheckRef.current) {
+      adminCheckRef.current = true;
       checkAdminRole(user.id);
     }
-  }, [user]);
+  }, [user, checkAdminRole]);
 
+  // Navigate to admin when confirmed
   useEffect(() => {
-    // Navigate only after isAdmin is confirmed
-    if (user && isAdmin && !authLoading) {
+    if (user && isAdmin) {
       navigate('/admin');
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, isAdmin, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +66,9 @@ export default function Auth() {
         } else {
           setError(signInError.message);
         }
+      } else {
+        // Reset admin check ref to allow new check after login
+        adminCheckRef.current = false;
       }
     }
   };
