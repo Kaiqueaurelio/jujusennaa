@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -7,6 +7,7 @@ export function useSupabaseAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const initRef = useRef(false);
 
   const checkAdminRole = useCallback(async (userId: string) => {
     try {
@@ -25,32 +26,38 @@ export function useSupabaseAuth() {
   }, []);
 
   useEffect(() => {
+    // Prevent double initialization
+    if (initRef.current) return;
+    initRef.current = true;
+
     let isMounted = true;
 
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event, currentSession) => {
         if (!isMounted) return;
         
-        setSession(session);
-        setUser(session?.user ?? null);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
         
         // Check admin role after auth change
-        if (session?.user) {
+        if (currentSession?.user) {
           setTimeout(() => {
             if (isMounted) {
-              checkAdminRole(session.user.id);
+              checkAdminRole(currentSession.user.id);
             }
           }, 0);
         } else {
           setIsAdmin(false);
         }
+        
+        // Always set loading to false on auth state change
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session: existingSession }, error }) => {
       if (!isMounted) return;
       
       if (error) {
@@ -59,12 +66,14 @@ export function useSupabaseAuth() {
         return;
       }
       
-      setSession(session);
-      setUser(session?.user ?? null);
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
       
-      if (session?.user) {
-        checkAdminRole(session.user.id);
+      if (existingSession?.user) {
+        checkAdminRole(existingSession.user.id);
       }
+      
+      // Set loading false after session check
       setLoading(false);
     }).catch((err) => {
       if (!isMounted) return;
@@ -72,13 +81,12 @@ export function useSupabaseAuth() {
       setLoading(false);
     });
 
-    // Failsafe timeout to ensure loading doesn't get stuck
+    // Failsafe timeout - shorter and more reliable
     const timeout = setTimeout(() => {
-      if (isMounted && loading) {
-        console.warn('Auth loading timeout reached');
+      if (isMounted) {
         setLoading(false);
       }
-    }, 5000);
+    }, 3000);
 
     return () => {
       isMounted = false;
@@ -88,19 +96,13 @@ export function useSupabaseAuth() {
   }, [checkAdminRole]);
 
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (!error) {
-        // Session will be updated via onAuthStateChange
-      }
-      setLoading(false);
       return { error };
     } catch (err) {
-      setLoading(false);
       return { error: err as Error };
     }
   };
