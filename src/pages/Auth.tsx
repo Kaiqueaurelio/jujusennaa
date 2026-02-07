@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   
-  const { user, loading: authLoading, isAdmin, signIn, signUp, signOut } = useSupabaseAuth();
+  const { user, loading: authLoading, isAdmin, signIn, signUp, signOut } = useAuth();
   const navigate = useNavigate();
 
   // Navigate to admin when confirmed as admin

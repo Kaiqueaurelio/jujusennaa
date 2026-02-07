@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, useGenerateProductImage, Product } from '@/hooks/useProducts';
 import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
 import { useProfile, useUpdateProfile, useUploadAvatar, useUploadProductImage } from '@/hooks/useProfile';
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export default function Admin() {
-  const { user, loading: authLoading, isAdmin, signOut } = useSupabaseAuth();
+  const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: links = [], isLoading: linksLoading } = useLinks();
