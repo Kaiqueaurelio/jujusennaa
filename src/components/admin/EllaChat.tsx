@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Loader2, Sparkles, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,13 +7,13 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import ellaAvatar from '@/assets/ella-avatar.png';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   actions?: string[];
+  isStreaming?: boolean;
 }
 
 const actionLabels: Record<string, string> = {
@@ -27,6 +27,21 @@ const actionLabels: Record<string, string> = {
   update_ad: '✏️ Anúncio atualizado',
   delete_ad: '🗑️ Anúncio removido',
   list_data: '📋 Dados listados',
+  search_data: '🔍 Busca realizada',
+};
+
+const toolStatusLabels: Record<string, string> = {
+  add_product: '➕ Adicionando produto...',
+  update_product: '✏️ Atualizando produto...',
+  delete_product: '🗑️ Removendo produto...',
+  add_link: '➕ Adicionando link...',
+  update_link: '✏️ Atualizando link...',
+  delete_link: '🗑️ Removendo link...',
+  add_ad: '➕ Criando anúncio...',
+  update_ad: '✏️ Atualizando anúncio...',
+  delete_ad: '🗑️ Removendo anúncio...',
+  list_data: '📋 Buscando dados...',
+  search_data: '🔍 Pesquisando...',
 };
 
 export default function EllaChat() {
@@ -39,15 +54,36 @@ export default function EllaChat() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [statusText, setStatusText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, statusText]);
+
+  const invalidateActions = useCallback((actions: string[]) => {
+    if (!actions || actions.length === 0) return;
+    const invalidateKeys = new Set<string>();
+    for (const action of actions) {
+      if (action.includes('product')) invalidateKeys.add('products');
+      if (action.includes('link')) invalidateKeys.add('links');
+      if (action.includes('ad')) invalidateKeys.add('ads');
+      if (action === 'list_data' || action === 'search_data') {
+        invalidateKeys.add('products');
+        invalidateKeys.add('links');
+        invalidateKeys.add('ads');
+      }
+    }
+    for (const key of invalidateKeys) {
+      queryClient.invalidateQueries({ queryKey: [key] });
+    }
+    toast.success('Ação executada pela Ella!');
+  }, [queryClient]);
 
   const sendMessage = async () => {
     const text = input.trim();
@@ -57,6 +93,13 @@ export default function EllaChat() {
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
+    setStatusText('');
+
+    // Add streaming placeholder
+    setMessages((prev) => [...prev, { role: 'assistant', content: '', isStreaming: true }]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
       const chatMessages = [...messages, userMsg].map((m) => ({
@@ -64,47 +107,125 @@ export default function EllaChat() {
         content: m.content,
       }));
 
-      const { data, error } = await supabase.functions.invoke('ella-chat', {
-        body: { messages: chatMessages },
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/ella-chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+          'apikey': supabaseKey,
+        },
+        body: JSON.stringify({ messages: chatMessages }),
+        signal: controller.signal,
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        throw new Error(errData.error || `HTTP ${response.status}`);
+      }
 
-      const assistantMsg: Message = {
-        role: 'assistant',
-        content: data.reply || 'Desculpe, não consegui processar sua solicitação.',
-        actions: data.actions || [],
-      };
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Stream não disponível');
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let streamedContent = '';
+      let finalActions: string[] = [];
 
-      // Invalidate relevant queries if actions were performed
-      if (data.actions && data.actions.length > 0) {
-        const invalidateKeys = new Set<string>();
-        for (const action of data.actions) {
-          if (action.includes('product')) invalidateKeys.add('products');
-          if (action.includes('link')) invalidateKeys.add('links');
-          if (action.includes('ad')) invalidateKeys.add('ads');
-          if (action === 'list_data') {
-            invalidateKeys.add('products');
-            invalidateKeys.add('links');
-            invalidateKeys.add('ads');
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            const eventType = line.slice(7).trim();
+            // Next line should be data
+            continue;
+          }
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6);
+            try {
+              const data = JSON.parse(dataStr);
+              // Determine event type from the data structure
+              if ('content' in data) {
+                // Token event
+                streamedContent += data.content;
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].isStreaming) {
+                    updated[lastIdx] = { ...updated[lastIdx], content: streamedContent };
+                  }
+                  return updated;
+                });
+                setStatusText('');
+              } else if ('tool' in data) {
+                // Status event - tool being executed
+                const label = toolStatusLabels[data.tool] || `⚙️ Executando ${data.tool}...`;
+                setStatusText(label);
+              } else if ('actions' in data) {
+                // Done event
+                finalActions = data.actions || [];
+              } else if ('error' in data) {
+                throw new Error(data.error);
+              }
+            } catch (parseErr) {
+              // Skip malformed data
+              if (parseErr instanceof Error && parseErr.message !== 'Unexpected end of JSON input') {
+                // Re-throw actual errors (not parse errors)
+                if (dataStr.includes('"error"')) {
+                  try {
+                    const errData = JSON.parse(dataStr);
+                    if (errData.error) throw new Error(errData.error);
+                  } catch { /* skip */ }
+                }
+              }
+            }
           }
         }
-        for (const key of invalidateKeys) {
-          queryClient.invalidateQueries({ queryKey: [key] });
-        }
-        toast.success('Ação executada pela Ella!');
       }
+
+      // Finalize message
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (lastIdx >= 0 && updated[lastIdx].isStreaming) {
+          updated[lastIdx] = {
+            role: 'assistant',
+            content: streamedContent || 'Pronto! Algo mais?',
+            actions: finalActions,
+            isStreaming: false,
+          };
+        }
+        return updated;
+      });
+
+      invalidateActions(finalActions);
     } catch (e: any) {
+      if (e.name === 'AbortError') return;
       const errorMsg = e?.message || 'Erro desconhecido';
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: `❌ Ocorreu um erro: ${errorMsg}` },
-      ]);
+      setMessages((prev) => {
+        // Replace the streaming placeholder with error
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (lastIdx >= 0 && updated[lastIdx].isStreaming) {
+          updated[lastIdx] = { role: 'assistant', content: `❌ Ocorreu um erro: ${errorMsg}`, isStreaming: false };
+        } else {
+          updated.push({ role: 'assistant', content: `❌ Ocorreu um erro: ${errorMsg}` });
+        }
+        return updated;
+      });
       toast.error('Erro ao comunicar com a Ella');
     } finally {
       setIsLoading(false);
+      setStatusText('');
+      abortRef.current = null;
     }
   };
 
@@ -160,7 +281,12 @@ export default function EllaChat() {
                       : 'bg-secondary/60 text-foreground rounded-bl-md'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <p className="whitespace-pre-wrap">
+                    {msg.content}
+                    {msg.isStreaming && (
+                      <span className="inline-block w-1.5 h-4 bg-primary/70 ml-0.5 animate-pulse rounded-sm" />
+                    )}
+                  </p>
                   {msg.actions && msg.actions.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-border/30">
                       {msg.actions.map((action, j) => (
@@ -175,22 +301,17 @@ export default function EllaChat() {
             ))}
           </AnimatePresence>
 
-          {isLoading && (
+          {/* Status indicator for tool execution */}
+          {isLoading && statusText && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
               className="flex gap-2.5"
             >
-              <Avatar className="h-7 w-7 flex-shrink-0 mt-0.5">
-                <AvatarImage src={ellaAvatar} alt="Ella" />
-                <AvatarFallback><Bot className="w-3.5 h-3.5" /></AvatarFallback>
-              </Avatar>
-              <div className="bg-secondary/60 rounded-2xl rounded-bl-md px-4 py-3">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
+              <div className="ml-9">
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary animate-pulse">
+                  {statusText}
+                </Badge>
               </div>
             </motion.div>
           )}
