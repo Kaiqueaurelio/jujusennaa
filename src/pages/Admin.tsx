@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, Product } from '@/hooks/useProducts';
@@ -19,7 +19,10 @@ import { AdsManager } from '@/components/admin/AdsManager';
 import EllaChat from '@/components/admin/EllaChat';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { LinkForm } from '@/components/admin/LinkForm';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import ellaAvatar from '@/assets/ella-avatar.png';
+import { X } from 'lucide-react';
 import {
   LogOut, User, ShoppingBag, Link2, Trash2, Plus,
   Edit2, BarChart3, Eye, Upload, Loader2, Ticket, Megaphone,
@@ -56,6 +59,7 @@ export default function Admin() {
   const [editingLink, setEditingLink] = useState<LinkType | null>(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
+  const [ellaOpen, setEllaOpen] = useState(false);
 
   if (authLoading) {
     return (
@@ -539,6 +543,45 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Floating Ella Button & Panel */}
+      <AnimatePresence>
+        {ellaOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed bottom-20 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] shadow-2xl rounded-2xl overflow-hidden border border-border/50"
+            style={{ boxShadow: '0 10px 50px hsl(var(--primary) / 0.15)' }}
+          >
+            <EllaChat />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.button
+        onClick={() => setEllaOpen((prev) => !prev)}
+        className="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-primary hover:bg-primary/90 transition-colors ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        style={{ boxShadow: '0 4px 20px hsl(var(--primary) / 0.4)' }}
+      >
+        <AnimatePresence mode="wait">
+          {ellaOpen ? (
+            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+              <X className="w-6 h-6 text-primary-foreground" />
+            </motion.div>
+          ) : (
+            <motion.div key="avatar" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={ellaAvatar} alt="Ella" />
+                <AvatarFallback><Sparkles className="w-5 h-5 text-primary-foreground" /></AvatarFallback>
+              </Avatar>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
     </div>
   );
 }
