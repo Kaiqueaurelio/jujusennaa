@@ -123,13 +123,33 @@ export function AdsSection() {
             style={{ x: dragX, opacity: dragOpacity }}
           >
             <div className="relative mx-4 overflow-hidden rounded-2xl">
-              <img
-                src={currentAd.image}
-                alt={currentAd.title}
-                className="w-full h-auto object-contain"
-                style={{ maxHeight: '70vh' }}
-                draggable={false}
-              />
+              {(() => {
+                const lower = currentAd.image.toLowerCase();
+                const isVideo = lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov');
+                if (isVideo) {
+                  return (
+                    <video
+                      src={currentAd.image}
+                      className="w-full h-auto object-contain"
+                      style={{ maxHeight: '70vh' }}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      draggable={false}
+                    />
+                  );
+                }
+                return (
+                  <img
+                    src={currentAd.image}
+                    alt={currentAd.title}
+                    className="w-full h-auto object-contain"
+                    style={{ maxHeight: '70vh' }}
+                    draggable={false}
+                  />
+                );
+              })()}
               
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
