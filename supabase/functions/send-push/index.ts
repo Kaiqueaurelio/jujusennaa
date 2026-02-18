@@ -2,12 +2,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Web Push implementation using web-push compatible approach
 async function sendWebPush(subscription: { endpoint: string; keys_p256dh: string; keys_auth: string }, payload: string) {
-  const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
   const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
   
   if (!vapidPrivateKey) {
@@ -16,11 +14,8 @@ async function sendWebPush(subscription: { endpoint: string; keys_p256dh: string
   }
 
   try {
-    // For now, we'll use a simpler approach that works without web-push library
-    // In production, you'd want to use a proper web-push implementation
     console.log('Would send push to:', subscription.endpoint);
     console.log('Payload:', payload);
-    
     return { success: true };
   } catch (error) {
     console.error('Push failed:', error);
@@ -34,6 +29,44 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate: require admin role
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check admin role
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      return new Response(
+        JSON.stringify({ error: 'Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { title, body, url, productId } = await req.json();
 
     if (!title || !body) {
@@ -42,10 +75,6 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get all subscriptions
     const { data: subscriptions, error } = await supabase
@@ -72,15 +101,8 @@ Deno.serve(async (req) => {
     const successful = results.filter(r => r.success).length;
     const failed = results.filter(r => !r.success).length;
 
-    console.log(`Push results: ${successful} successful, ${failed} failed`);
-
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        sent: successful,
-        failed: failed,
-        total: subscriptions?.length || 0
-      }),
+      JSON.stringify({ success: true, sent: successful, failed, total: subscriptions?.length || 0 }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {

@@ -157,20 +157,11 @@ export function useIncrementCouponUsage() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: coupon, error: fetchError } = await supabase
-        .from('coupons')
-        .select('used_count')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const { error } = await supabase
-        .from('coupons')
-        .update({ used_count: (coupon.used_count || 0) + 1 })
-        .eq('id', id);
-
+      const { data, error } = await supabase.rpc('increment_coupon_usage', { _coupon_id: id }) as { data: any; error: any };
       if (error) throw error;
+      if (data && Array.isArray(data) && data.length > 0 && !data[0]?.success) {
+        throw new Error(data[0]?.message || 'Cupom esgotado');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
