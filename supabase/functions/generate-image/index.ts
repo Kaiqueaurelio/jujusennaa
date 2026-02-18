@@ -5,6 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// Sanitize input: allow only alphanumeric, spaces, hyphens, accented chars
+function sanitize(str: string, maxLen: number): string {
+  return str.replace(/[^\p{L}\p{N}\s\-.,!?()]/gu, '').trim().slice(0, maxLen);
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,20 +30,22 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: claimsData, error: claimsError } = await supabaseAdmin.auth.getClaims(token);
 
-    if (authError || !user) {
+    if (claimsError || !claimsData?.claims) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const userId = claimsData.claims.sub as string;
+
     // Check admin role
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('role', 'admin')
       .maybeSingle();
 
@@ -49,21 +56,42 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { productName, productCategory } = await req.json();
+    const body = await req.json();
+    const rawName = body?.productName;
+    const rawCategory = body?.productCategory;
 
-    if (!productName) {
+    // Validate inputs
+    if (!rawName || typeof rawName !== 'string' || rawName.trim().length === 0) {
       return new Response(
         JSON.stringify({ error: 'Product name is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    if (rawName.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Product name must be under 100 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (rawCategory && (typeof rawCategory !== 'string' || rawCategory.length > 50)) {
+      return new Response(
+        JSON.stringify({ error: 'Category must be under 50 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sanitize for prompt injection prevention
+    const productName = sanitize(rawName, 100);
+    const productCategory = rawCategory ? sanitize(rawCategory, 50) : 'Digital';
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const prompt = `Professional high-end product photography for a digital product called "${productName}" in the ${productCategory || 'Digital'} category. 
+    const prompt = `Professional high-end product photography for a digital product called "${productName}" in the ${productCategory} category. 
 
 Style requirements:
 - Hyper-realistic 3D render with cinematic lighting
@@ -93,7 +121,20 @@ The image should look like a premium marketing asset for a high-end digital prod
     });
 
     if (!response.ok) {
-      throw new Error(`AI Gateway error: ${response.status}`);
+      const status = response.status;
+      if (status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'AI credits exhausted.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw new Error(`AI Gateway error: ${status}`);
     }
 
     const data = await response.json();
@@ -105,7 +146,10 @@ The image should look like a premium marketing asset for a high-end digital prod
 
     const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, '');
     const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-    const fileName = `products/${Date.now()}-${productName.replace(/\s+/g, '-').toLowerCase()}.png`;
+    
+    // Sanitize filename
+    const safeName = productName.replace(/[^a-zA-Z0-9\-]/g, '-').toLowerCase().slice(0, 50);
+    const fileName = `products/${Date.now()}-${safeName}.png`;
     
     const { error: uploadError } = await supabaseAdmin.storage
       .from('images')
@@ -120,10 +164,9 @@ The image should look like a premium marketing asset for a high-end digital prod
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
-    console.error('Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'Image generation failed' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

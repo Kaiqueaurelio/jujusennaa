@@ -2,8 +2,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str);
+    return url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,11 +20,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { endpoint } = await req.json();
+    const body = await req.json();
+    const endpoint = body?.endpoint;
 
-    if (!endpoint) {
+    // Validate endpoint
+    if (!endpoint || typeof endpoint !== 'string' || endpoint.length > 500 || !isValidUrl(endpoint)) {
       return new Response(
-        JSON.stringify({ error: 'Endpoint is required' }),
+        JSON.stringify({ error: 'Invalid endpoint: must be a valid HTTPS URL under 500 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -31,17 +42,13 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    // Subscription removed successfully
-
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
-    console.error('Error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'Failed to remove subscription' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
