@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 Deno.serve(async (req) => {
@@ -11,6 +11,44 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate: require admin role
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check admin role
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      return new Response(
+        JSON.stringify({ error: 'Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { productName, productCategory } = await req.json();
 
     if (!productName) {
@@ -65,21 +103,17 @@ The image should look like a premium marketing asset for a high-end digital prod
       throw new Error('No image generated');
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, '');
     const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
     const fileName = `products/${Date.now()}-${productName.replace(/\s+/g, '-').toLowerCase()}.png`;
     
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('images')
       .upload(fileName, imageBuffer, { contentType: 'image/png', upsert: true });
 
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: publicUrl } = supabase.storage.from('images').getPublicUrl(fileName);
+    const { data: publicUrl } = supabaseAdmin.storage.from('images').getPublicUrl(fileName);
 
     return new Response(
       JSON.stringify({ imageUrl: publicUrl.publicUrl }),
