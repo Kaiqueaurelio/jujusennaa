@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, ShoppingCart, Ticket, Check, X, Loader2, Sparkles, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { getProductImage } from '@/data/productImages';
 
 interface ProductModalProps {
   product: Product | null;
@@ -44,6 +45,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   if (!product) return null;
 
+  const productImage = getProductImage(product.image);
   const discount = product.originalPrice 
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
@@ -96,14 +98,13 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            {product.image ? (
+            {productImage ? (
               <motion.img 
-                src={product.image} 
+                layoutId={`product-image-${product.id}`}
+                src={productImage} 
                 alt={product.name} 
                 className="w-full h-full object-cover"
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/30 to-secondary flex items-center justify-center">
