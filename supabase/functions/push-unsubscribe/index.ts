@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    console.log('Push subscription removed:', endpoint);
+    // Subscription removed successfully
 
     return new Response(
       JSON.stringify({ success: true }),

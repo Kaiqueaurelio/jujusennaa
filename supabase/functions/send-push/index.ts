@@ -9,13 +9,11 @@ async function sendWebPush(subscription: { endpoint: string; keys_p256dh: string
   const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
   
   if (!vapidPrivateKey) {
-    console.log('VAPID_PRIVATE_KEY not configured, skipping push notification');
     return { success: false, reason: 'VAPID not configured' };
   }
 
   try {
-    console.log('Would send push to:', subscription.endpoint);
-    console.log('Payload:', payload);
+    // TODO: Implement actual Web Push delivery
     return { success: true };
   } catch (error) {
     console.error('Push failed:', error);
@@ -83,7 +81,7 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    console.log(`Sending push to ${subscriptions?.length || 0} subscribers`);
+    // Processing push notifications
 
     const payload = JSON.stringify({
       title,
