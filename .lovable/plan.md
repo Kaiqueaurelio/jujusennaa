@@ -1,115 +1,66 @@
 
+# Melhorar Fluidez da Aba de Anuncios
 
-# Ella Ribeiro - Assistente IA do Painel Admin
+## Problema
+O componente `AdsManager` tem animacoes basicas (apenas fade-in nos cards) e a interface carece de transicoes suaves, micro-interacoes e feedback visual que os outros componentes do app ja possuem.
 
-## Visao Geral
-Criar uma assistente de IA chamada **Ella Ribeiro** integrada ao painel admin, com avatar personalizado. Ella sera capaz de executar acoes reais no app via comandos em linguagem natural, como adicionar produtos, criar links, gerenciar anuncios, e mais.
+## Melhorias Propostas
 
-## Como Funciona
+### 1. Animacoes com Framer Motion aprimoradas
+- **Stats cards**: Adicionar `AnimatePresence` e animacao de contagem nos numeros (counter animation)
+- **Lista de anuncios**: Usar `layout` animation nos cards para transicoes suaves ao reordenar/remover
+- **Stagger cascade**: Aumentar o efeito de entrada em cascata nos cards com spring physics
+- **Exit animations**: Adicionar animacao de saida ao deletar um anuncio (`AnimatePresence` + exit variants)
 
-O admin conversa com Ella em um chat. Ella interpreta o que o admin quer fazer e executa a acao diretamente no banco de dados. Exemplos:
+### 2. Micro-interacoes nos cards
+- Hover com `whileHover` (scale sutil + shadow) e `whileTap` (scale down) nos botoes de acao
+- Transicao suave no toggle ativo/inativo (mudanca de opacidade animada ao inves de classe estatica)
+- Thumbnail com hover zoom suave
 
-- "Adiciona um produto chamado Planner 2026, preco 29.90, categoria Produtividade"
-- "Ativa todos os produtos inativos"
-- "Cria um link pro meu Instagram @decode"
-- "Lista todos os produtos com desconto"
-- "Desativa o anuncio da empresa X"
+### 3. Estado vazio animado
+- Animar o icone `Megaphone` com float/bounce no estado vazio
+- Fade-in suave no texto
 
-## Componentes a Criar
-
-### 1. Avatar da Ella
-Copiar a imagem enviada para `src/assets/ella-avatar.png` e usa-la como foto de perfil no chat.
-
-### 2. Edge Function `ella-chat`
-Uma funcao backend que:
-- Recebe as mensagens do admin + contexto atual (produtos, links, ads)
-- Usa Lovable AI (google/gemini-3-flash-preview) com **tool calling** para interpretar comandos
-- Define tools para cada acao possivel:
-  - `add_product` - adicionar produto
-  - `update_product` - atualizar produto
-  - `delete_product` - remover produto
-  - `list_products` - listar produtos
-  - `add_link` - adicionar link
-  - `update_link` - atualizar link
-  - `delete_link` - remover link
-  - `add_ad` - criar anuncio
-  - `update_ad` - atualizar anuncio
-  - `delete_ad` - remover anuncio
-  - `list_data` - listar dados gerais
-- Executa a acao no banco usando o service role key
-- Retorna confirmacao + dados atualizados
-
-### 3. Componente `EllaChat`
-- Chat panel com avatar da Ella no header
-- Mensagens com bolhas estilizadas (admin vs Ella)
-- Input de texto na parte inferior
-- Streaming de respostas da IA
-- Feedback visual quando uma acao e executada (toast + badge)
-- Animacoes com Framer Motion
-
-### 4. Integracao no Admin
-- Nova aba "Ella IA" no TabsList com icone de sparkles
-- O componente EllaChat ocupa o conteudo da aba
-- Ella tem acesso de leitura aos dados atuais para contexto
+### 4. Dialog com transicao melhorada
+- Animacao de entrada/saida no preview da imagem dentro do dialog (scale-in)
 
 ---
 
 ## Secao Tecnica
 
-### Edge Function: `supabase/functions/ella-chat/index.ts`
+### Arquivo: `src/components/admin/AdsManager.tsx`
 
-**System prompt da Ella:**
-```text
-Voce e Ella Ribeiro, assistente virtual do painel DECODE. Voce ajuda o admin a gerenciar
-produtos, links e anuncios. Seja amigavel, objetiva e proativa. Sempre confirme as acoes
-executadas. Responda sempre em portugues brasileiro.
+**Mudancas principais:**
+
+1. Importar `AnimatePresence` e `useAnimationControls` do framer-motion
+
+2. **Stats cards** - Envolver em `motion.div` com stagger:
+```tsx
+<motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1, type: "spring" }}>
 ```
 
-**Tools definidas para o modelo:**
-- `add_product(name, description, fullDescription, price, originalPrice, category, tags, featured, active)`
-- `update_product(id, ...fields)` 
-- `delete_product(id)`
-- `add_link(title, url, icon, category, order, active)`
-- `update_link(id, ...fields)`
-- `delete_link(id)`
-- `add_ad(title, description, image_url, link_url, advertiser_name, active, sort_order)`
-- `update_ad(id, ...fields)`
-- `delete_ad(id)`
-- `list_data(type)` - type: "products" | "links" | "ads"
-
-**Fluxo:**
-1. Frontend envia mensagens + dados de contexto resumidos
-2. Edge function chama Lovable AI com tools
-3. Se o modelo retorna tool_calls, executa cada acao no banco via Supabase service role
-4. Retorna resultado + mensagem amigavel da Ella
-
-### Componente: `src/components/admin/EllaChat.tsx`
-
-- Estado: array de mensagens `{role, content, actions?}`
-- Hook customizado `useEllaChat` para gerenciar o streaming
-- Ao receber confirmacao de acao, invalida queries relevantes (products, links, ads)
-- Auto-scroll para ultima mensagem
-- Mensagem de boas-vindas da Ella ao abrir
-
-### Atualizacao do config.toml
-Adicionar entrada para a nova funcao:
-```text
-[functions.ella-chat]
-verify_jwt = false
+3. **Lista de ads** - Adicionar `AnimatePresence` com `layout` e `exit`:
+```tsx
+<AnimatePresence mode="popLayout">
+  {ads?.map((ad, index) => (
+    <motion.div
+      key={ad.id}
+      layout
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, x: -100, scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25, delay: index * 0.05 }}
+    >
 ```
 
-### Arquivos criados/editados
-- **Criar**: `src/assets/ella-avatar.png` (copia do upload)
-- **Criar**: `supabase/functions/ella-chat/index.ts`
-- **Criar**: `src/components/admin/EllaChat.tsx`
-- **Editar**: `src/pages/Admin.tsx` (nova aba)
-- **Editar**: `supabase/config.toml` (registrar funcao)
+4. **Card hover** - `whileHover={{ scale: 1.01, boxShadow: "..." }}` no Card wrapper
 
-### Ordem de implementacao
-1. Copiar avatar da Ella
-2. Criar edge function ella-chat com tools
-3. Criar componente EllaChat
-4. Integrar no Admin.tsx como nova aba
-5. Deploy da edge function
-6. Testar end-to-end
+5. **Botoes de acao** - `whileHover={{ scale: 1.15 }}` e `whileTap={{ scale: 0.9 }}` em cada botao
 
+6. **Toggle ativo** - Transicao de opacidade animada via `motion.div` com `animate={{ opacity: ad.active ? 1 : 0.5 }}`
+
+7. **Image preview no dialog** - `motion.div` com `initial={{ scale: 0.8, opacity: 0 }}` e `animate={{ scale: 1, opacity: 1 }}`
+
+8. **Empty state** - Icone Megaphone com `animate={{ y: [0, -8, 0] }}` em loop
+
+9. **Upload area** - Hover animation com border-color pulse
