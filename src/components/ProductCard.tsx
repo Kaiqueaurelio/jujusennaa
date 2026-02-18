@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Product } from '@/hooks/useProducts';
-import { Eye, MessageCircle } from 'lucide-react';
+import { Eye, MessageCircle, Flame, TrendingUp } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { getProductImage } from '@/data/productImages';
 
@@ -10,10 +10,11 @@ interface ProductCardProps {
   index?: number;
 }
 
-function getBadge(product: Product): { text: string; color: string } | null {
+function getBadge(product: Product): { text: string; color: string; icon?: 'flame' | 'trending' } | null {
+  if (product.tags?.includes('mais vendido')) return { text: 'Mais Vendido', color: 'bg-orange-500', icon: 'flame' };
+  if (product.tags?.includes('popular')) return { text: 'Popular', color: 'bg-orange-500', icon: 'flame' };
   if (product.featured) return { text: 'Premium', color: 'bg-primary' };
-  if (product.tags?.includes('popular')) return { text: 'Popular', color: 'bg-primary' };
-  if (product.tags?.includes('novo')) return { text: 'Novo', color: 'bg-primary' };
+  if (product.tags?.includes('novo')) return { text: 'Novo', color: 'bg-emerald-500', icon: 'trending' };
   return null;
 }
 
@@ -22,6 +23,14 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
   
   const badge = getBadge(product);
   const productImage = getProductImage(product.image);
+
+  const discount = product.originalPrice && product.originalPrice > product.price
+    ? Math.round((1 - product.price / product.originalPrice) * 100)
+    : 0;
+
+  const savings = product.originalPrice && product.originalPrice > product.price
+    ? product.originalPrice - product.price
+    : 0;
   
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,7 +69,8 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             <div className="absolute inset-[2px] rounded-2xl bg-card z-0" />
           </>
         )}
-        {/* Image Container - layoutId for shared element transition */}
+
+        {/* Image Container */}
         <div 
           className="relative aspect-square overflow-hidden z-[1]"
           onClick={onClick}
@@ -80,14 +90,29 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             </div>
           )}
 
+          {/* Badge de popularidade */}
           {badge && (
             <motion.div 
-              className={`absolute top-3 left-3 px-3 py-1 rounded-md ${badge.color} text-primary-foreground text-xs font-semibold z-20`}
+              className={`absolute top-3 left-3 px-3 py-1 rounded-md ${badge.color} text-white text-xs font-semibold z-20 flex items-center gap-1`}
               initial={{ scale: 0, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: index * 0.1 + 0.2, type: 'spring', stiffness: 200 }}
             >
+              {badge.icon === 'flame' && <Flame className="w-3 h-3" />}
+              {badge.icon === 'trending' && <TrendingUp className="w-3 h-3" />}
               {badge.text}
+            </motion.div>
+          )}
+
+          {/* Badge de desconto */}
+          {discount > 0 && (
+            <motion.div
+              className="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-emerald-500 text-white text-xs font-bold z-20"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: index * 0.1 + 0.3, type: 'spring', stiffness: 300 }}
+            >
+              -{discount}% OFF
             </motion.div>
           )}
 
@@ -110,19 +135,33 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
         </div>
 
         {/* Product Info */}
-        <div className="relative z-[1] p-4 space-y-3">
+        <div className="relative z-[1] p-4 space-y-2">
           <h3 className="font-semibold text-foreground text-base line-clamp-2 min-h-[48px]">
             {product.name}
           </h3>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-primary font-bold text-xl">
-              R$ {product.price.toFixed(2).replace('.', ',')}
-            </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-muted-foreground text-sm line-through">
-                R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+          {/* Descrição curta */}
+          <p className="text-muted-foreground text-xs line-clamp-2 min-h-[32px]">
+            {product.description}
+          </p>
+
+          <div className="space-y-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-primary font-bold text-xl">
+                R$ {product.price.toFixed(2).replace('.', ',')}
               </span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-muted-foreground text-sm line-through">
+                  R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+                </span>
+              )}
+            </div>
+
+            {/* Economia */}
+            {savings > 0 && (
+              <p className="text-emerald-500 text-xs font-semibold">
+                Economize R$ {savings.toFixed(2).replace('.', ',')}
+              </p>
             )}
           </div>
 
