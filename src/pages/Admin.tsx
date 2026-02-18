@@ -561,7 +561,8 @@ export default function Admin() {
       </AnimatePresence>
 
       <motion.button
-        onClick={() => setEllaOpen((prev) => !prev)}
+        type="button"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setEllaOpen((prev) => !prev); }}
         className="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-primary hover:bg-primary/90 transition-colors ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
