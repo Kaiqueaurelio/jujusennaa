@@ -16,13 +16,14 @@ import { Badge } from '@/components/ui/badge';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 import CouponsManager from '@/components/admin/CouponsManager';
 import { AdsManager } from '@/components/admin/AdsManager';
+import EllaChat from '@/components/admin/EllaChat';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { LinkForm } from '@/components/admin/LinkForm';
 import { motion } from 'framer-motion';
 import {
   LogOut, User, ShoppingBag, Link2, Trash2, Plus,
   Edit2, BarChart3, Eye, Upload, Loader2, Ticket, Megaphone,
-  Home, TrendingUp, Zap, Crown
+  Home, TrendingUp, Zap, Crown, Sparkles
 } from 'lucide-react';
 
 const statCardVariants = {
@@ -250,6 +251,10 @@ export default function Admin() {
             <TabsTrigger value="ads" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
               <Megaphone className="w-3.5 h-3.5" />
               <span>Anúncios</span>
+            </TabsTrigger>
+            <TabsTrigger value="ella" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Ella IA</span>
             </TabsTrigger>
           </TabsList>
 
@@ -523,6 +528,13 @@ export default function Admin() {
           <TabsContent value="ads">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
               <AdsManager />
+            </motion.div>
+          </TabsContent>
+
+          {/* Ella IA Tab */}
+          <TabsContent value="ella">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+              <EllaChat />
             </motion.div>
           </TabsContent>
         </Tabs>
