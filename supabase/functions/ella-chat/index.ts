@@ -250,12 +250,13 @@ const tools = [
   },
 ];
 
+// Optimized context: only essential fields
 async function fetchContext(supabase: any): Promise<string> {
   try {
     const [productsRes, linksRes, adsRes] = await Promise.all([
-      supabase.from("products").select("id,name,price,original_price,category,active,featured,tags,description").order("sort_order"),
-      supabase.from("links").select("id,title,url,icon,category,active,sort_order,clicks").order("sort_order"),
-      supabase.from("ads").select("id,title,advertiser_name,link_url,active,sort_order,expires_at,description").order("sort_order"),
+      supabase.from("products").select("id,name,price,active,featured,category").order("sort_order"),
+      supabase.from("links").select("id,title,url,icon,category,active").order("sort_order"),
+      supabase.from("ads").select("id,title,advertiser_name,active,expires_at").order("sort_order"),
     ]);
 
     const products = productsRes.data || [];
@@ -264,15 +265,12 @@ async function fetchContext(supabase: any): Promise<string> {
 
     const summary = [
       `## Dados Atuais do App`,
-      ``,
       `### Produtos (${products.length} total, ${products.filter((p: any) => p.active).length} ativos)`,
-      ...products.map((p: any) => `- **${p.name}** [ID: ${p.id}] | R$${p.price}${p.original_price ? ` (de R$${p.original_price})` : ''} | Cat: ${p.category} | ${p.active ? '✅ Ativo' : '❌ Inativo'} | ${p.featured ? '⭐ Destaque' : ''} | Tags: ${(p.tags || []).join(', ')}`),
-      ``,
+      ...products.map((p: any) => `- **${p.name}** [ID: ${p.id}] | R$${p.price} | ${p.category} | ${p.active ? '✅' : '❌'} ${p.featured ? '⭐' : ''}`),
       `### Links (${links.length} total, ${links.filter((l: any) => l.active).length} ativos)`,
-      ...links.map((l: any) => `- **${l.title}** [ID: ${l.id}] | ${l.url} | Ícone: ${l.icon} | Cat: ${l.category} | ${l.active ? '✅' : '❌'} | ${l.clicks} cliques`),
-      ``,
+      ...links.map((l: any) => `- **${l.title}** [ID: ${l.id}] | ${l.url} | ${l.icon} | ${l.active ? '✅' : '❌'}`),
       `### Anúncios (${ads.length} total, ${ads.filter((a: any) => a.active).length} ativos)`,
-      ...ads.map((a: any) => `- **${a.title}** [ID: ${a.id}] | Anunciante: ${a.advertiser_name} | ${a.active ? '✅' : '❌'}${a.expires_at ? ` | Expira: ${a.expires_at}` : ''}`),
+      ...ads.map((a: any) => `- **${a.title}** [ID: ${a.id}] | ${a.advertiser_name} | ${a.active ? '✅' : '❌'}${a.expires_at ? ` | Exp: ${a.expires_at}` : ''}`),
     ].join('\n');
 
     return summary;
@@ -312,7 +310,6 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         return JSON.stringify({ success: true, message: `Produto "${data.name}" atualizado com sucesso!`, product: { id: data.id, name: data.name, price: data.price, active: data.active } });
       }
       case "delete_product": {
-        // First get the name for confirmation
         const { data: existing } = await supabase.from("products").select("name").eq("id", args.id).single();
         const { error } = await supabase.from("products").delete().eq("id", args.id);
         if (error) return JSON.stringify({ error: error.message });
@@ -422,6 +419,12 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
   }
 }
 
+// SSE helper to write events to a stream controller
+function sseEvent(controller: ReadableStreamDefaultController, event: string, data: any) {
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  controller.enqueue(new TextEncoder().encode(payload));
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -434,97 +437,126 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Fetch current DB context
+    // Fetch context
     const contextData = await fetchContext(supabase);
-
-    // Build enriched system message with live data
     const systemWithContext = `${SYSTEM_PROMPT}\n\n${contextData}`;
 
-    // Agentic loop: keep calling AI until no more tool calls (max 5 iterations)
-    let conversationMessages: any[] = [
+    const conversationMessages: any[] = [
       { role: "system", content: systemWithContext },
       ...messages,
     ];
     const allExecutedActions: string[] = [];
-    let finalReply = "";
-    const MAX_ITERATIONS = 5;
+    const MAX_ITERATIONS = 3;
 
-    for (let i = 0; i < MAX_ITERATIONS; i++) {
-      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: conversationMessages,
-          tools,
-          tool_choice: "auto",
-        }),
-      });
+    // Create SSE stream
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for (let i = 0; i < MAX_ITERATIONS; i++) {
+            // Check if this is potentially the last iteration - try streaming
+            const isLastChance = i === MAX_ITERATIONS - 1;
+            
+            // First do a non-streaming call to check for tool_calls
+            const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-3-flash-preview",
+                messages: conversationMessages,
+                tools,
+                tool_choice: "auto",
+              }),
+            });
 
-      if (!aiResponse.ok) {
-        const status = aiResponse.status;
-        if (status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit excedido. Tente novamente em alguns segundos." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+            if (!aiResponse.ok) {
+              const status = aiResponse.status;
+              const t = await aiResponse.text();
+              let errorMsg = "Erro na IA";
+              if (status === 429) errorMsg = "Rate limit excedido. Tente novamente em alguns segundos.";
+              else if (status === 402) errorMsg = "Créditos insuficientes para IA.";
+              else errorMsg = `Erro na IA: ${t}`;
+              sseEvent(controller, "error", { error: errorMsg });
+              break;
+            }
+
+            const aiData = await aiResponse.json();
+            const choice = aiData.choices?.[0];
+            if (!choice) break;
+
+            const assistantMessage = choice.message;
+
+            // No tool calls = final text response -> stream it as tokens
+            if (!assistantMessage?.tool_calls || assistantMessage.tool_calls.length === 0) {
+              const finalText = assistantMessage?.content || "Pronto! Algo mais?";
+              // Send the text in chunks to simulate streaming effect
+              const words = finalText.split(/(\s+)/);
+              let buffer = "";
+              for (let w = 0; w < words.length; w++) {
+                buffer += words[w];
+                // Send every few words for smooth streaming
+                if (w % 3 === 2 || w === words.length - 1) {
+                  sseEvent(controller, "token", { content: buffer });
+                  buffer = "";
+                }
+              }
+              sseEvent(controller, "done", { actions: allExecutedActions });
+              break;
+            }
+
+            // Has tool calls - execute them
+            conversationMessages.push(assistantMessage);
+
+            // Execute tool calls in parallel
+            const toolPromises = assistantMessage.tool_calls.map(async (tc: any) => {
+              const args = typeof tc.function.arguments === "string" ? JSON.parse(tc.function.arguments) : tc.function.arguments;
+              console.log(`Executing tool: ${tc.function.name}`, args);
+              
+              // Send status event to frontend
+              sseEvent(controller, "status", { tool: tc.function.name, args });
+              
+              const result = await executeTool(supabase, tc.function.name, args);
+              console.log(`Tool result: ${result}`);
+              
+              return { id: tc.id, name: tc.function.name, result };
+            });
+
+            const toolResults = await Promise.all(toolPromises);
+
+            for (const tr of toolResults) {
+              conversationMessages.push({
+                tool_call_id: tr.id,
+                role: "tool",
+                content: tr.result,
+              });
+              allExecutedActions.push(tr.name);
+            }
+
+            // If last iteration, send fallback
+            if (isLastChance) {
+              sseEvent(controller, "token", { content: "Ações executadas com sucesso! Algo mais que posso ajudar?" });
+              sseEvent(controller, "done", { actions: allExecutedActions });
+            }
+          }
+        } catch (e) {
+          console.error("SSE stream error:", e);
+          sseEvent(controller, "error", { error: e.message || "Erro interno" });
+        } finally {
+          controller.close();
         }
-        if (status === 402) {
-          return new Response(JSON.stringify({ error: "Créditos insuficientes para IA." }), {
-            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const t = await aiResponse.text();
-        console.error("AI gateway error:", status, t);
-        return new Response(JSON.stringify({ error: "Erro na IA: " + t }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      },
+    });
 
-      const aiData = await aiResponse.json();
-      const choice = aiData.choices?.[0];
-      if (!choice) break;
-
-      const assistantMessage = choice.message;
-
-      // No tool calls = final text response
-      if (!assistantMessage?.tool_calls || assistantMessage.tool_calls.length === 0) {
-        finalReply = assistantMessage?.content || "Pronto! Algo mais?";
-        break;
-      }
-
-      // Execute all tool calls
-      conversationMessages.push(assistantMessage);
-      
-      for (const tc of assistantMessage.tool_calls) {
-        const args = typeof tc.function.arguments === "string" ? JSON.parse(tc.function.arguments) : tc.function.arguments;
-        console.log(`Executing tool: ${tc.function.name}`, args);
-        const result = await executeTool(supabase, tc.function.name, args);
-        console.log(`Tool result: ${result}`);
-        
-        conversationMessages.push({
-          tool_call_id: tc.id,
-          role: "tool",
-          content: result,
-        });
-        allExecutedActions.push(tc.function.name);
-      }
-
-      // If this is the last iteration, force a final response
-      if (i === MAX_ITERATIONS - 1) {
-        finalReply = "Ações executadas com sucesso! Algo mais que posso ajudar?";
-      }
-    }
-
-    return new Response(
-      JSON.stringify({
-        reply: finalReply,
-        actions: allExecutedActions,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
   } catch (e) {
     console.error("ella-chat error:", e);
     return new Response(JSON.stringify({ error: e.message || "Erro interno" }), {
