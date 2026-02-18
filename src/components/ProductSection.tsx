@@ -1,10 +1,36 @@
-import { useState, useRef, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef, useMemo, useCallback } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { ProductCard } from './ProductCard';
 import { ProductModal } from './ProductModal';
 import { ProductsSkeleton } from './SkeletonLoaders';
 import { ChevronLeft, ChevronRight, Flame, ShoppingCart, Sparkles } from 'lucide-react';
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.06 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: { 
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const }
+  }
+};
+
+function ScrollProgressBar({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> }) {
+  const { scrollXProgress } = useScroll({ container: scrollRef });
+  const width = useTransform(scrollXProgress, [0, 1], ['0%', '100%']);
+  
+  return (
+    <div className="mx-4 mt-2 h-0.5 bg-muted/30 rounded-full overflow-hidden">
+      <motion.div className="h-full bg-primary/60 rounded-full" style={{ width }} />
+    </div>
+  );
+}
 
 export function ProductSection() {
   const { data: products, isLoading } = useProducts();
@@ -22,6 +48,15 @@ export function ProductSection() {
     return ['Todos', ...cats];
   }, [activeProducts]);
 
+  // Count products per category
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { 'Todos': activeProducts.length };
+    activeProducts.forEach(p => {
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    return counts;
+  }, [activeProducts]);
+
   const featuredProducts = useMemo(() => activeProducts.filter(p => p.featured), [activeProducts]);
   const filteredProducts = useMemo(() => 
     selectedCategory === 'Todos'
@@ -29,12 +64,12 @@ export function ProductSection() {
       : activeProducts.filter(p => p.category === selectedCategory)
   , [activeProducts, selectedCategory]);
 
-  const scroll = (ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
+  const scroll = useCallback((ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
     if (ref.current) {
       const scrollAmount = direction === 'left' ? -300 : 300;
       ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
-  };
+  }, []);
 
   if (isLoading) {
     return <ProductsSkeleton />;
@@ -61,33 +96,32 @@ export function ProductSection() {
         <ChevronLeft className="w-8 h-8 text-foreground" />
       </motion.button>
 
-      {/* Scrollable Container */}
-      <div 
-        ref={ref}
+      {/* Scrollable Container with stagger */}
+      <motion.div 
+        ref={ref as any}
         className="flex gap-4 overflow-x-auto scrollbar-hide px-4 scroll-smooth snap-x snap-mandatory pb-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-30px" }}
       >
-        {productList.map((product, index) => (
+        {productList.map((product) => (
           <motion.div
             key={`${keyPrefix}${product.id}`}
             className="snap-start"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-30px" }}
-            transition={{ 
-              delay: index * 0.08,
-              duration: 0.5,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }}
+            variants={itemVariants}
           >
             <ProductCard 
               product={product} 
               onClick={() => setSelectedProduct(product)}
-              index={index}
             />
           </motion.div>
         ))}
-      </div>
+      </motion.div>
+
+      {/* Scroll Progress Bar */}
+      <ScrollProgressBar scrollRef={ref} />
 
       {/* Right Arrow */}
       <motion.button
@@ -103,21 +137,33 @@ export function ProductSection() {
 
   return (
     <>
-      {/* Category Filter Chips */}
+      {/* Category Filter Chips with Sliding Pill */}
       <div className="px-4 mb-6">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
           {categories.map((cat) => (
             <motion.button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
+              className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors relative"
               whileTap={{ scale: 0.95 }}
             >
-              {cat}
+              {selectedCategory === cat && (
+                <motion.div
+                  layoutId="activeChip"
+                  className="absolute inset-0 bg-primary rounded-full"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className={`relative z-10 ${
+                selectedCategory === cat
+                  ? 'text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}>
+                {cat} ({categoryCounts[cat] || 0})
+              </span>
+              {selectedCategory !== cat && (
+                <div className="absolute inset-0 bg-secondary rounded-full -z-0" />
+              )}
             </motion.button>
           ))}
         </div>

@@ -35,21 +35,10 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
   const isFeatured = product.featured;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9, y: 15 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ 
-        duration: 0.5, 
-        delay: index * 0.08,
-        ease: [0.25, 0.46, 0.45, 0.94]
-      }}
-      className="flex-shrink-0 w-[260px] sm:w-[280px]"
-    >
+    <div className="flex-shrink-0 w-[260px] sm:w-[280px]">
       <div 
         className={`relative rounded-2xl overflow-hidden bg-card border group cursor-pointer ${
-          isFeatured 
-            ? 'border-transparent' 
-            : 'border-border/50'
+          isFeatured ? 'border-transparent' : 'border-border/50'
         }`}
         style={{
           boxShadow: isFeatured
@@ -57,7 +46,6 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             : '0 0 20px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
         }}
       >
-        {/* Animated neon border for featured products */}
         {isFeatured && (
           <>
             <div 
@@ -72,16 +60,16 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             <div className="absolute inset-[2px] rounded-2xl bg-card z-0" />
           </>
         )}
-        {/* Image Container with Neon Effect */}
+        {/* Image Container - layoutId for shared element transition */}
         <div 
           className="relative aspect-square overflow-hidden z-[1]"
           onClick={onClick}
         >
-          {/* Purple/Neon glow effect on the image area */}
           <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-background/50 pointer-events-none z-10" />
           
           {productImage ? (
-            <img 
+            <motion.img 
+              layoutId={`product-image-${product.id}`}
               src={productImage} 
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -92,7 +80,6 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             </div>
           )}
 
-          {/* Badge */}
           {badge && (
             <motion.div 
               className={`absolute top-3 left-3 px-3 py-1 rounded-md ${badge.color} text-primary-foreground text-xs font-semibold z-20`}
@@ -104,7 +91,6 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             </motion.div>
           )}
 
-          {/* Hover Overlay - Ver detalhes */}
           <motion.div 
             className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
             initial={false}
@@ -120,18 +106,15 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             </motion.button>
           </motion.div>
 
-          {/* Bottom gradient */}
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-card to-transparent z-10" />
         </div>
 
         {/* Product Info */}
         <div className="relative z-[1] p-4 space-y-3">
-          {/* Title */}
           <h3 className="font-semibold text-foreground text-base line-clamp-2 min-h-[48px]">
             {product.name}
           </h3>
 
-          {/* Price */}
           <div className="flex items-baseline gap-2">
             <span className="text-primary font-bold text-xl">
               R$ {product.price.toFixed(2).replace('.', ',')}
@@ -143,7 +126,6 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             )}
           </div>
 
-          {/* WhatsApp Button */}
           <motion.button
             onClick={handleWhatsAppClick}
             className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
@@ -155,6 +137,6 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
           </motion.button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

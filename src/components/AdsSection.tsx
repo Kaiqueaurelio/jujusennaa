@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { MessageCircle, Megaphone, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAds } from '@/hooks/useAds';
 import { AdCarouselSkeleton } from '@/components/SkeletonLoaders';
 
-// Import fallback ad images
 import adZonaFazedor from '@/assets/ad-zona-fazedor.jpeg';
 import adFerramentas from '@/assets/ad-ferramentas.jpeg';
 import adSocialMedia from '@/assets/ad-social-media.jpeg';
@@ -18,99 +17,74 @@ interface AdSlide {
   advertiser: string;
 }
 
-// Fallback static ads when no ads in database
 const fallbackAds: AdSlide[] = [
-  {
-    id: 'fallback-1',
-    image: adZonaFazedor,
-    title: 'Zona do Fazedor',
-    link: 'https://pay.kiwify.com.br/HlJSYEV',
-    advertiser: 'Zona do Fazedor'
-  },
-  {
-    id: 'fallback-2',
-    image: adFerramentas,
-    title: 'Ferramentas & Ebooks',
-    link: 'https://pay.kiwify.com.br/HlJSYEV',
-    advertiser: 'Zona do Fazedor'
-  },
-  {
-    id: 'fallback-3',
-    image: adSocialMedia,
-    title: 'Social Media & Photoshop',
-    link: 'https://pay.kiwify.com.br/HlJSYEV',
-    advertiser: 'Zona do Fazedor'
-  }
+  { id: 'fallback-1', image: adZonaFazedor, title: 'Zona do Fazedor', link: 'https://pay.kiwify.com.br/HlJSYEV', advertiser: 'Zona do Fazedor' },
+  { id: 'fallback-2', image: adFerramentas, title: 'Ferramentas & Ebooks', link: 'https://pay.kiwify.com.br/HlJSYEV', advertiser: 'Zona do Fazedor' },
+  { id: 'fallback-3', image: adSocialMedia, title: 'Social Media & Photoshop', link: 'https://pay.kiwify.com.br/HlJSYEV', advertiser: 'Zona do Fazedor' }
 ];
 
+const slideVariants = {
+  enter: { opacity: 0, scale: 1.03 },
+  center: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.97 }
+};
+
 export function AdsSection() {
-  const { data: dbAds, isLoading, error } = useAds();
+  const { data: dbAds, isLoading } = useAds();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [direction, setDirection] = useState(0);
+  const dragX = useMotionValue(0);
+  const dragOpacity = useTransform(dragX, [-200, 0, 200], [0.5, 1, 0.5]);
 
-  // Use database ads if available, otherwise fallback
   const ads: AdSlide[] = dbAds && dbAds.length > 0 
     ? dbAds.filter(ad => ad.active).map(ad => ({
-        id: ad.id,
-        image: ad.image_url || adZonaFazedor,
-        title: ad.title,
-        link: ad.link_url,
-        advertiser: ad.advertiser_name
+        id: ad.id, image: ad.image_url || adZonaFazedor,
+        title: ad.title, link: ad.link_url, advertiser: ad.advertiser_name
       }))
     : fallbackAds;
 
-  // Auto-rotate ads every 4 seconds
   useEffect(() => {
     if (ads.length <= 1 || isPaused) return;
-
     const interval = setInterval(() => {
+      setDirection(1);
       setCurrentIndex(prev => (prev + 1) % ads.length);
     }, 4000);
-
     return () => clearInterval(interval);
   }, [ads.length, isPaused]);
 
-  // Scroll to current slide
-  useEffect(() => {
-    if (scrollRef.current && ads.length > 0) {
-      const slideWidth = scrollRef.current.scrollWidth / ads.length;
-      scrollRef.current.scrollTo({
-        left: currentIndex * slideWidth,
-        behavior: 'smooth'
-      });
-    }
-  }, [currentIndex, ads.length]);
-
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
+    setDirection(-1);
     setCurrentIndex(prev => (prev - 1 + ads.length) % ads.length);
-  };
+  }, [ads.length]);
 
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
+    setDirection(1);
     setCurrentIndex(prev => (prev + 1) % ads.length);
-  };
+  }, [ads.length]);
+
+  const handleDragEnd = useCallback((_: any, info: PanInfo) => {
+    const threshold = 50;
+    if (info.offset.x < -threshold) goToNext();
+    else if (info.offset.x > threshold) goToPrevious();
+  }, [goToNext, goToPrevious]);
 
   const handleContactClick = () => {
     const message = encodeURIComponent('Olá! Tenho interesse em anunciar na sua plataforma. Poderia me passar mais informações?');
     window.open(`https://wa.me/5511939222885?text=${message}`, '_blank');
   };
 
-  if (isLoading) {
-    return <AdCarouselSkeleton />;
-  }
+  if (isLoading) return <AdCarouselSkeleton />;
+  if (ads.length === 0) return null;
 
-  if (ads.length === 0) {
-    return null;
-  }
+  const currentAd = ads[currentIndex];
 
   return (
     <section className="relative">
       <div className="flex items-center justify-between mb-3 px-4">
         <div className="flex items-center gap-2">
           <Megaphone className="w-5 h-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">
-            Parceiros & Anúncios
-          </h2>
+          <h2 className="text-lg font-semibold text-foreground">Parceiros & Anúncios</h2>
         </div>
         <motion.button
           onClick={handleContactClick}
@@ -123,73 +97,66 @@ export function AdsSection() {
         </motion.button>
       </div>
 
-      {/* Full-size carousel */}
-      <div 
-        className="relative"
+      {/* Crossfade Carousel with Swipe */}
+      <div
+        className="relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Carousel Container */}
-        <div 
-          ref={scrollRef}
-          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {ads.map((ad, index) => (
-            <motion.a
-              key={ad.id}
-              href={ad.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-shrink-0 w-full snap-center relative group"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                delay: index * 0.1,
-                duration: 0.5,
-                ease: [0.25, 0.46, 0.45, 0.94]
-              }}
-            >
-              <div className="relative mx-4 overflow-hidden rounded-2xl">
-                <img
-                  src={ad.image}
-                  alt={ad.title}
-                  className="w-full h-auto object-contain"
-                  style={{ maxHeight: '70vh' }}
-                />
-                
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                {/* Hover action */}
-                <motion.div
-                  className="absolute bottom-4 left-4 right-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  initial={{ y: 20 }}
-                  whileHover={{ y: 0 }}
-                >
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-primary/80 font-medium block">
-                      {ad.advertiser}
-                    </span>
-                    <span className="text-lg font-bold text-foreground drop-shadow-lg">
-                      {ad.title}
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                    <ExternalLink className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                </motion.div>
-
-                {/* Sponsored tag */}
-                <div className="absolute top-3 right-3 px-2 py-1 rounded bg-background/60 backdrop-blur-sm">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    Patrocinado
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.a
+            key={currentAd.id}
+            href={currentAd.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block relative group"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDragEnd}
+            style={{ x: dragX, opacity: dragOpacity }}
+          >
+            <div className="relative mx-4 overflow-hidden rounded-2xl">
+              <img
+                src={currentAd.image}
+                alt={currentAd.title}
+                className="w-full h-auto object-contain"
+                style={{ maxHeight: '70vh' }}
+                draggable={false}
+              />
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <motion.div
+                className="absolute bottom-4 left-4 right-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                initial={{ y: 20 }}
+                whileHover={{ y: 0 }}
+              >
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-primary/80 font-medium block">
+                    {currentAd.advertiser}
+                  </span>
+                  <span className="text-lg font-bold text-foreground drop-shadow-lg">
+                    {currentAd.title}
                   </span>
                 </div>
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                  <ExternalLink className="w-5 h-5 text-primary-foreground" />
+                </div>
+              </motion.div>
+
+              <div className="absolute top-3 right-3 px-2 py-1 rounded bg-background/60 backdrop-blur-sm">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Patrocinado</span>
               </div>
-            </motion.a>
-          ))}
-        </div>
+            </div>
+          </motion.a>
+        </AnimatePresence>
 
         {/* Navigation arrows */}
         {ads.length > 1 && (
@@ -218,7 +185,7 @@ export function AdsSection() {
           {ads.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentIndex(index)}
+              onClick={() => { setDirection(index > currentIndex ? 1 : -1); setCurrentIndex(index); }}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 index === currentIndex 
                   ? 'w-8 bg-primary' 
@@ -229,7 +196,6 @@ export function AdsSection() {
         </div>
       </div>
 
-      {/* CTA Button */}
       <div className="text-center mt-4 px-4">
         <Button
           variant="outline"
