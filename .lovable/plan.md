@@ -1,96 +1,115 @@
 
 
-# Produtos Mais Persuasivos e Detalhados
+# Ella Ribeiro - Assistente IA do Painel Admin
 
-## O Problema Atual
-Os cards e o modal dos produtos mostram apenas nome, preco e uma descricao simples. Faltam elementos de persuasao que gerem urgencia, confianca e desejo de compra.
+## Visao Geral
+Criar uma assistente de IA chamada **Ella Ribeiro** integrada ao painel admin, com avatar personalizado. Ella sera capaz de executar acoes reais no app via comandos em linguagem natural, como adicionar produtos, criar links, gerenciar anuncios, e mais.
 
-## Melhorias no ProductCard
+## Como Funciona
 
-### 1. Descricao curta visivel no card
-Adicionar a `description` do produto abaixo do nome, com 2 linhas (line-clamp-2), para que o cliente ja entenda o que esta comprando sem precisar abrir o modal.
+O admin conversa com Ella em um chat. Ella interpreta o que o admin quer fazer e executa a acao diretamente no banco de dados. Exemplos:
 
-### 2. Badge de desconto percentual
-Quando houver `originalPrice`, mostrar um badge vermelho/verde no canto com "-XX% OFF" diretamente no card (hoje so aparece no modal).
+- "Adiciona um produto chamado Planner 2026, preco 29.90, categoria Produtividade"
+- "Ativa todos os produtos inativos"
+- "Cria um link pro meu Instagram @decode"
+- "Lista todos os produtos com desconto"
+- "Desativa o anuncio da empresa X"
 
-### 3. Economia exibida
-Mostrar "Economize R$ XX,XX" em verde abaixo do preco riscado para reforcar o valor da oferta.
+## Componentes a Criar
 
-### 4. Indicador de popularidade
-Mostrar "Mais vendido" ou "Popular" com icone de fogo para produtos com essas tags, gerando prova social.
+### 1. Avatar da Ella
+Copiar a imagem enviada para `src/assets/ella-avatar.png` e usa-la como foto de perfil no chat.
 
----
+### 2. Edge Function `ella-chat`
+Uma funcao backend que:
+- Recebe as mensagens do admin + contexto atual (produtos, links, ads)
+- Usa Lovable AI (google/gemini-3-flash-preview) com **tool calling** para interpretar comandos
+- Define tools para cada acao possivel:
+  - `add_product` - adicionar produto
+  - `update_product` - atualizar produto
+  - `delete_product` - remover produto
+  - `list_products` - listar produtos
+  - `add_link` - adicionar link
+  - `update_link` - atualizar link
+  - `delete_link` - remover link
+  - `add_ad` - criar anuncio
+  - `update_ad` - atualizar anuncio
+  - `delete_ad` - remover anuncio
+  - `list_data` - listar dados gerais
+- Executa a acao no banco usando o service role key
+- Retorna confirmacao + dados atualizados
 
-## Melhorias no ProductModal
+### 3. Componente `EllaChat`
+- Chat panel com avatar da Ella no header
+- Mensagens com bolhas estilizadas (admin vs Ella)
+- Input de texto na parte inferior
+- Streaming de respostas da IA
+- Feedback visual quando uma acao e executada (toast + badge)
+- Animacoes com Framer Motion
 
-### 5. Secao "O que voce recebe" (Beneficios)
-Extrair os itens da fullDescription e apresenta-los como uma lista com checkmarks verdes, muito mais escaneavel do que um paragrafo de texto. Usar regex para separar itens por virgula/ponto e apresentar cada um com icone de check.
-
-### 6. Badges de confianca
-Adicionar uma linha com icones de confianca:
-- "Entrega imediata" (icone de raio)
-- "Acesso vitalicio" (icone de infinito)  
-- "Suporte incluso" (icone de headset)
-
-### 7. Urgencia e escassez
-Para produtos com desconto, mostrar uma faixa animada: "Oferta por tempo limitado" com icone de relogio pulsando.
-
-### 8. Preco parcelado
-Abaixo do preco, mostrar "ou Xx de R$ X,XX" para valores acima de R$ 30, tornando o preco mais acessivel psicologicamente.
-
-### 9. Garantia visual
-Adicionar selo "Satisfacao garantida ou seu dinheiro de volta" com icone de escudo, gerando confianca.
-
-### 10. CTA mais persuasivo
-Mudar o botao de "Comprar pelo WhatsApp" para "Garantir o meu agora" com subtexto "Atendimento imediato via WhatsApp".
+### 4. Integracao no Admin
+- Nova aba "Ella IA" no TabsList com icone de sparkles
+- O componente EllaChat ocupa o conteudo da aba
+- Ella tem acesso de leitura aos dados atuais para contexto
 
 ---
 
 ## Secao Tecnica
 
-### Arquivos editados
-- `src/components/ProductCard.tsx` - descricao, badge de desconto, economia, indicador de popularidade
-- `src/components/ProductModal.tsx` - lista de beneficios, badges de confianca, urgencia, parcelamento, garantia, CTA persuasivo
+### Edge Function: `supabase/functions/ella-chat/index.ts`
 
-### Detalhes de implementacao
-
-**ProductCard - Badge de desconto:**
+**System prompt da Ella:**
 ```text
-const discount = product.originalPrice && product.originalPrice > product.price
-  ? Math.round((1 - product.price / product.originalPrice) * 100)
-  : 0;
-
-// Renderizar badge "-XX% OFF" sobre a imagem
+Voce e Ella Ribeiro, assistente virtual do painel DECODE. Voce ajuda o admin a gerenciar
+produtos, links e anuncios. Seja amigavel, objetiva e proativa. Sempre confirme as acoes
+executadas. Responda sempre em portugues brasileiro.
 ```
 
-**ProductModal - Lista de beneficios:**
-Parsear `fullDescription` separando por `. `, `, ` e `: ` para criar itens individuais com checkmarks:
+**Tools definidas para o modelo:**
+- `add_product(name, description, fullDescription, price, originalPrice, category, tags, featured, active)`
+- `update_product(id, ...fields)` 
+- `delete_product(id)`
+- `add_link(title, url, icon, category, order, active)`
+- `update_link(id, ...fields)`
+- `delete_link(id)`
+- `add_ad(title, description, image_url, link_url, advertiser_name, active, sort_order)`
+- `update_ad(id, ...fields)`
+- `delete_ad(id)`
+- `list_data(type)` - type: "products" | "links" | "ads"
+
+**Fluxo:**
+1. Frontend envia mensagens + dados de contexto resumidos
+2. Edge function chama Lovable AI com tools
+3. Se o modelo retorna tool_calls, executa cada acao no banco via Supabase service role
+4. Retorna resultado + mensagem amigavel da Ella
+
+### Componente: `src/components/admin/EllaChat.tsx`
+
+- Estado: array de mensagens `{role, content, actions?}`
+- Hook customizado `useEllaChat` para gerenciar o streaming
+- Ao receber confirmacao de acao, invalida queries relevantes (products, links, ads)
+- Auto-scroll para ultima mensagem
+- Mensagem de boas-vindas da Ella ao abrir
+
+### Atualizacao do config.toml
+Adicionar entrada para a nova funcao:
 ```text
-const benefits = product.fullDescription
-  .split(/[.,:]\s+/)
-  .filter(b => b.length > 10)
-  .slice(0, 6);
+[functions.ella-chat]
+verify_jwt = false
 ```
 
-**ProductModal - Badges de confianca:**
-Tres icones inline com texto curto:
-- Zap + "Entrega imediata"
-- Shield + "Compra segura"  
-- Clock + "Suporte 24h"
-
-**ProductModal - Parcelamento:**
-```text
-const installments = finalPrice > 30 ? Math.min(Math.floor(finalPrice / 10), 12) : 0;
-// Mostrar "ou {installments}x de R$ {(finalPrice/installments).toFixed(2)}"
-```
-
-**ProductModal - Faixa de urgencia:**
-Animated banner com `motion.div` para produtos com desconto, usando pulse animation no icone de relogio.
+### Arquivos criados/editados
+- **Criar**: `src/assets/ella-avatar.png` (copia do upload)
+- **Criar**: `supabase/functions/ella-chat/index.ts`
+- **Criar**: `src/components/admin/EllaChat.tsx`
+- **Editar**: `src/pages/Admin.tsx` (nova aba)
+- **Editar**: `supabase/config.toml` (registrar funcao)
 
 ### Ordem de implementacao
-1. ProductCard: descricao + badge de desconto + economia
-2. ProductModal: lista de beneficios com checkmarks
-3. ProductModal: badges de confianca
-4. ProductModal: urgencia + parcelamento + garantia
-5. ProductModal: CTA persuasivo
+1. Copiar avatar da Ella
+2. Criar edge function ella-chat com tools
+3. Criar componente EllaChat
+4. Integrar no Admin.tsx como nova aba
+5. Deploy da edge function
+6. Testar end-to-end
 
