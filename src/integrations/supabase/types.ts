@@ -304,6 +304,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_coupon_usage: {
+        Args: { _coupon_id: string }
+        Returns: Record<string, unknown>
+      }
+      increment_link_clicks: { Args: { link_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"

@@ -125,19 +125,7 @@ export function useIncrementLinkClick() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: current, error: fetchError } = await supabase
-        .from('links')
-        .select('clicks')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const { error } = await supabase
-        .from('links')
-        .update({ clicks: (current?.clicks || 0) + 1 })
-        .eq('id', id);
-
+      const { error } = await supabase.rpc('increment_link_clicks', { link_id: id });
       if (error) throw error;
     },
     onSuccess: () => {
