@@ -1,66 +1,59 @@
 
-# Melhorar Fluidez da Aba de Anuncios
+
+# Melhorar Velocidade de Resposta da Ella Ribeiro
 
 ## Problema
-O componente `AdsManager` tem animacoes basicas (apenas fade-in nos cards) e a interface carece de transicoes suaves, micro-interacoes e feedback visual que os outros componentes do app ja possuem.
+A Ella demora para responder porque:
+1. O frontend espera a resposta **completa** antes de mostrar qualquer texto (sem streaming)
+2. O backend busca **todos os dados** do banco antes de cada resposta, mesmo para perguntas simples
+3. O loop agentico pode fazer ate 5 chamadas sequenciais a IA, e o usuario so ve o resultado no final
 
-## Melhorias Propostas
+## Solucao: Streaming + Otimizacoes
 
-### 1. Animacoes com Framer Motion aprimoradas
-- **Stats cards**: Adicionar `AnimatePresence` e animacao de contagem nos numeros (counter animation)
-- **Lista de anuncios**: Usar `layout` animation nos cards para transicoes suaves ao reordenar/remover
-- **Stagger cascade**: Aumentar o efeito de entrada em cascata nos cards com spring physics
-- **Exit animations**: Adicionar animacao de saida ao deletar um anuncio (`AnimatePresence` + exit variants)
-
-### 2. Micro-interacoes nos cards
-- Hover com `whileHover` (scale sutil + shadow) e `whileTap` (scale down) nos botoes de acao
-- Transicao suave no toggle ativo/inativo (mudanca de opacidade animada ao inves de classe estatica)
-- Thumbnail com hover zoom suave
-
-### 3. Estado vazio animado
-- Animar o icone `Megaphone` com float/bounce no estado vazio
-- Fade-in suave no texto
-
-### 4. Dialog com transicao melhorada
-- Animacao de entrada/saida no preview da imagem dentro do dialog (scale-in)
+### O que muda para o usuario
+- As respostas vao aparecendo **palavra por palavra** em tempo real, como no ChatGPT
+- O tempo ate a primeira palavra aparecer sera de ~1-2 segundos em vez de 5-15 segundos
+- Indicador de "digitando..." mais responsivo
 
 ---
 
 ## Secao Tecnica
 
-### Arquivo: `src/components/admin/AdsManager.tsx`
+### 1. Backend: Streaming na Edge Function (`supabase/functions/ella-chat/index.ts`)
 
-**Mudancas principais:**
+**Mudancas:**
+- Manter o agentic loop (tool calls) como esta, pois precisa executar acoes
+- Na **ultima iteracao** (quando nao ha mais tool calls), usar `stream: true` na chamada a IA
+- Retornar um `ReadableStream` com SSE para o frontend em vez de esperar a resposta completa
+- Durante as iteracoes com tool calls, enviar eventos SSE intermediarios de status (ex: "Buscando dados...", "Executando acao...")
+- Adicionar `select()` mais enxuto no `fetchContext` - buscar apenas campos essenciais (id, name, price, active)
+- Reduzir `MAX_ITERATIONS` de 5 para 3 (na pratica raramente precisa de mais)
 
-1. Importar `AnimatePresence` e `useAnimationControls` do framer-motion
-
-2. **Stats cards** - Envolver em `motion.div` com stagger:
-```tsx
-<motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1, type: "spring" }}>
+Fluxo:
+```text
+Usuario envia mensagem
+  -> Backend busca contexto (otimizado, campos minimos)
+  -> Loop agentico:
+     - Se tem tool_calls: executa e envia SSE de status ("Executando: add_product...")
+     - Se nao tem tool_calls: faz chamada final com stream=true
+  -> Tokens da resposta final chegam via SSE em tempo real
 ```
 
-3. **Lista de ads** - Adicionar `AnimatePresence` com `layout` e `exit`:
-```tsx
-<AnimatePresence mode="popLayout">
-  {ads?.map((ad, index) => (
-    <motion.div
-      key={ad.id}
-      layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, x: -100, scale: 0.9 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25, delay: index * 0.05 }}
-    >
-```
+### 2. Frontend: Renderizacao Progressiva (`src/components/admin/EllaChat.tsx`)
 
-4. **Card hover** - `whileHover={{ scale: 1.01, boxShadow: "..." }}` no Card wrapper
+**Mudancas:**
+- Trocar `supabase.functions.invoke()` por `fetch()` direto com leitura de SSE
+- Implementar parser SSE linha por linha para renderizar tokens conforme chegam
+- Atualizar o ultimo `message` do assistant progressivamente (nao criar nova mensagem a cada token)
+- Mostrar badges de acao intermediaria em tempo real ("Executando: Produto adicionado...")
+- Adicionar cursor piscante (blinking cursor) no final do texto enquanto esta recebendo
 
-5. **Botoes de acao** - `whileHover={{ scale: 1.15 }}` e `whileTap={{ scale: 0.9 }}` em cada botao
+### 3. Otimizacoes adicionais no backend
 
-6. **Toggle ativo** - Transicao de opacidade animada via `motion.div` com `animate={{ opacity: ad.active ? 1 : 0.5 }}`
+- **Contexto mais leve**: No `fetchContext`, selecionar apenas `id, name, active, price` nos produtos (sem description, tags, full_description)
+- **Cache de contexto**: Se o usuario enviar varias mensagens seguidas, reutilizar o contexto por 30 segundos
+- **Tool calls em paralelo**: Quando a IA retorna multiplos tool_calls, executar com `Promise.all()` em vez de sequencialmente
 
-7. **Image preview no dialog** - `motion.div` com `initial={{ scale: 0.8, opacity: 0 }}` e `animate={{ scale: 1, opacity: 1 }}`
-
-8. **Empty state** - Icone Megaphone com `animate={{ y: [0, -8, 0] }}` em loop
-
-9. **Upload area** - Hover animation com border-color pulse
+### Arquivos modificados
+- `supabase/functions/ella-chat/index.ts` - streaming SSE + otimizacoes
+- `src/components/admin/EllaChat.tsx` - parser SSE + renderizacao progressiva
