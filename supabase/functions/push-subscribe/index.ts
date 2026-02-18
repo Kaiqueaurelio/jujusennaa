@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    console.log('Push subscription saved:', subscription.endpoint);
+    // Subscription saved successfully
 
     return new Response(
       JSON.stringify({ success: true }),
