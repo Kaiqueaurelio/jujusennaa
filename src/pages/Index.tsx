@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { HeaderProfile } from '@/components/HeaderProfile';
 import { LinksSection } from '@/components/LinksSection';
 import { ProductSection } from '@/components/ProductSection';
@@ -6,12 +6,17 @@ import { AdsSection } from '@/components/AdsSection';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
-import { Search, MoreVertical, Menu } from 'lucide-react';
+import { SearchOverlay } from '@/components/SearchOverlay';
+import { Footer } from '@/components/Footer';
+import { Search, MoreVertical, Menu, Sun, Moon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { useTheme } from 'next-themes';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { scrollY } = useScroll();
@@ -39,6 +44,9 @@ const Index = () => {
     <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden">
       {/* Mobile Menu */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      
+      {/* Search Overlay */}
+      <SearchOverlay open={isSearchOpen} onOpenChange={setIsSearchOpen} />
 
       {/* Parallax Header with enhanced effects */}
       <motion.header 
@@ -92,8 +100,21 @@ const Index = () => {
               className="p-1"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              onClick={() => setIsSearchOpen(true)}
             >
               <Search className="w-5 h-5 text-foreground" />
+            </motion.button>
+            <motion.button
+              className="p-1"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5 text-foreground" />
+              ) : (
+                <Moon className="w-5 h-5 text-foreground" />
+              )}
             </motion.button>
             <NotificationBell />
             <Link to="/admin">
@@ -159,18 +180,7 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Footer */}
-        <motion.footer 
-          className="mt-16 text-center px-4"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Decode Analytics
-          </p>
-        </motion.footer>
+        <Footer />
       </div>
 
       <FloatingWhatsApp />

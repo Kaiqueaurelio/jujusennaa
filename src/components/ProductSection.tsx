@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { ProductCard } from './ProductCard';
@@ -9,9 +9,25 @@ import { ChevronLeft, ChevronRight, Flame, ShoppingCart, Sparkles } from 'lucide
 export function ProductSection() {
   const { data: products, isLoading } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const scrollRef1 = useRef<HTMLDivElement>(null);
   const scrollRef2 = useRef<HTMLDivElement>(null);
   const scrollRef3 = useRef<HTMLDivElement>(null);
+  const activeProducts = useMemo(() => 
+    products?.filter(p => p.active).sort((a, b) => a.order - b.order) || []
+  , [products]);
+
+  const categories = useMemo(() => {
+    const cats = [...new Set(activeProducts.map(p => p.category))];
+    return ['Todos', ...cats];
+  }, [activeProducts]);
+
+  const featuredProducts = useMemo(() => activeProducts.filter(p => p.featured), [activeProducts]);
+  const filteredProducts = useMemo(() => 
+    selectedCategory === 'Todos'
+      ? activeProducts
+      : activeProducts.filter(p => p.category === selectedCategory)
+  , [activeProducts, selectedCategory]);
 
   const scroll = (ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -23,10 +39,6 @@ export function ProductSection() {
   if (isLoading) {
     return <ProductsSkeleton />;
   }
-
-  const activeProducts = products?.filter(p => p.active).sort((a, b) => a.order - b.order) || [];
-  const featuredProducts = activeProducts.filter(p => p.featured);
-  const regularProducts = activeProducts;
 
   const sectionVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -91,9 +103,29 @@ export function ProductSection() {
 
   return (
     <>
+      {/* Category Filter Chips */}
+      <div className="px-4 mb-6">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+          {categories.map((cat) => (
+            <motion.button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === cat
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+              whileTap={{ scale: 0.95 }}
+            >
+              {cat}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
       {/* Featured Products - Destaques */}
-      {featuredProducts.length > 0 && (
-        <motion.section 
+      {featuredProducts.length > 0 && selectedCategory === 'Todos' && (
+        <motion.section
           className="relative"
           initial="hidden"
           whileInView="visible"
@@ -136,11 +168,11 @@ export function ProductSection() {
           <h2 className="text-xl font-bold text-foreground">Minha Loja</h2>
         </motion.div>
         
-        {renderCarousel(scrollRef2, regularProducts, 'store-')}
+        {renderCarousel(scrollRef2, filteredProducts, 'store-')}
       </motion.section>
 
       {/* Recommendations - Principais escolhas */}
-      {regularProducts.length > 2 && (
+      {filteredProducts.length > 2 && selectedCategory === 'Todos' && (
         <motion.section 
           className="relative mt-10"
           initial="hidden"
@@ -160,7 +192,7 @@ export function ProductSection() {
             <h2 className="text-xl font-bold text-foreground">Principais escolhas para você</h2>
           </motion.div>
           
-          {renderCarousel(scrollRef3, [...regularProducts].reverse(), 'rec-')}
+          {renderCarousel(scrollRef3, [...filteredProducts].reverse(), 'rec-')}
         </motion.section>
       )}
 
