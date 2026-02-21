@@ -24,16 +24,14 @@ const Index = () => {
   
   const smoothScrollY = useSpring(scrollY, { stiffness: 100, damping: 30 });
   
-  // Refined header parallax - opacity + blur only, no scale
   const headerY = useTransform(smoothScrollY, [0, 200], [0, -30]);
   const headerOpacity = useTransform(smoothScrollY, [0, 100], [1, 0.95]);
   const headerBgOpacity = useTransform(smoothScrollY, [0, 80], [0, 0.95]);
+  const headerGradientOpacity = useTransform(smoothScrollY, [0, 80], [1, 0]);
   
-  // Logo parallax keeps scale
   const logoScale = useTransform(smoothScrollY, [0, 150], [1, 0.85]);
   const logoY = useTransform(smoothScrollY, [0, 150], [0, -5]);
   
-  // Profile section parallax
   const profileY = useTransform(smoothScrollY, [0, 300], [0, -50]);
   const profileOpacity = useTransform(smoothScrollY, [0, 200], [1, 0.7]);
 
@@ -57,7 +55,7 @@ const Index = () => {
         
         <motion.div 
           className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-transparent pointer-events-none"
-          style={{ opacity: useTransform(smoothScrollY, [0, 80], [1, 0]) }}
+          style={{ opacity: headerGradientOpacity }}
         />
         
         <div className="relative flex items-center justify-between px-4 py-3">

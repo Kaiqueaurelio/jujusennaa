@@ -18,7 +18,7 @@ export function BackToTop() {
       {show && (
         <motion.button
           onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-50 w-10 h-10 rounded-full bg-primary/80 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-primary transition-colors"
+          className="fixed bottom-36 right-6 z-50 w-10 h-10 rounded-full bg-primary/80 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-primary transition-colors"
           initial={{ opacity: 0, y: 20, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.8 }}
