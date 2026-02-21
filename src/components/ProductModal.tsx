@@ -134,7 +134,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="bg-[#181818] border-[#2a2a2a] max-w-2xl max-h-[90vh] overflow-y-auto p-0">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

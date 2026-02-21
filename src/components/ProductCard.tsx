@@ -8,6 +8,7 @@ interface ProductCardProps {
   product: Product;
   onClick: () => void;
   index?: number;
+  rank?: number;
 }
 
 function getBadge(product: Product): { text: string; color: string; icon?: 'flame' | 'trending' } | null {
@@ -18,7 +19,7 @@ function getBadge(product: Product): { text: string; color: string; icon?: 'flam
   return null;
 }
 
-export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
+export function ProductCard({ product, onClick, index = 0, rank }: ProductCardProps) {
   const { data: profile } = useProfile();
   const [isHovered, setIsHovered] = useState(false);
   
@@ -39,9 +40,25 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
   };
 
   return (
-    <div className="flex-shrink-0 w-[230px] sm:w-[300px]">
+    <div className={`flex-shrink-0 ${rank ? 'w-[270px] sm:w-[350px]' : 'w-[230px] sm:w-[300px]'}`}>
+      <div className="flex items-end">
+        {/* Top 10 number */}
+        {rank && (
+          <div className="flex-shrink-0 flex items-end pr-0 -mr-3 relative z-[2]">
+            <span
+              className="text-[80px] sm:text-[100px] font-black leading-none select-none"
+              style={{
+                color: 'transparent',
+                WebkitTextStroke: '2px hsl(var(--muted-foreground) / 0.5)',
+                textShadow: '4px 4px 8px hsl(0 0% 0% / 0.5)',
+              }}
+            >
+              {rank}
+            </span>
+          </div>
+        )}
       <div
-        className="relative rounded-md overflow-hidden bg-card cursor-pointer transition-all duration-300 ease-out"
+        className="relative rounded-md overflow-hidden bg-card cursor-pointer transition-all duration-300 ease-out flex-1"
         style={{
           transform: isHovered ? 'scale(1.3)' : 'scale(1)',
           zIndex: isHovered ? 50 : 1,
@@ -58,6 +75,13 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
         }}
         onClick={onClick}
       >
+        {/* Hover shimmer on top border */}
+        {isHovered && (
+          <div className="absolute top-0 left-0 right-0 h-[2px] z-20 overflow-hidden">
+            <div className="w-full h-full bg-gradient-to-r from-transparent via-foreground/60 to-transparent animate-[slideInRight_1s_ease-out]" />
+          </div>
+        )}
+
         {/* Thumbnail 16:9 */}
         <div className="relative aspect-video overflow-hidden">
           {productImage ? (
@@ -152,6 +176,7 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
