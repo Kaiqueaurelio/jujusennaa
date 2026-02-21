@@ -183,19 +183,19 @@ export function AdsSection() {
           <>
             <motion.button
               onClick={goToPrevious}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 shadow-lg"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-70 md:opacity-0 md:hover:opacity-100 transition-opacity z-10 shadow-lg"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <ChevronLeft className="w-6 h-6 text-foreground" />
+              <ChevronLeft className="w-5 h-5 text-foreground" />
             </motion.button>
             <motion.button
               onClick={goToNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10 shadow-lg"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-70 md:opacity-0 md:hover:opacity-100 transition-opacity z-10 shadow-lg"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <ChevronRight className="w-6 h-6 text-foreground" />
+              <ChevronRight className="w-5 h-5 text-foreground" />
             </motion.button>
           </>
         )}

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Loader2, Sparkles, Bot, Paperclip, X, Image as ImageIcon, Film } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -392,12 +393,16 @@ export default function EllaChat() {
                       ))}
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap">
-                    {msg.content}
+                  <div className="prose prose-sm prose-invert max-w-none [&_p]:my-0.5 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0 [&_strong]:text-inherit [&_a]:text-primary [&_a]:underline">
+                    {msg.role === 'assistant' ? (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    ) : (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    )}
                     {msg.isStreaming && (
                       <span className="inline-block w-1.5 h-4 bg-primary/70 ml-0.5 animate-pulse rounded-sm" />
                     )}
-                  </p>
+                  </div>
                   {msg.actions && msg.actions.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-border/30">
                       {msg.actions.map((action, j) => (
