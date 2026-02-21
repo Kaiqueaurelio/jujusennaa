@@ -1,76 +1,39 @@
 
-# Redesign Completo: Visual Identico ao Netflix
+# Refinamentos Netflix: Detalhes que Faltam
 
-## Objetivo
-Transformar a interface publica do app para ser visualmente identica ao Netflix, mantendo todas as funcionalidades, dados e consistencia ja construidos. O foco e no layout, tipografia, cores, espacamento e comportamento visual dos componentes.
+## Resumo
+Ajustes finos para aproximar ainda mais do visual Netflix sem alterar os designs ja aprovados (links coloridos, cards com hover 1.3x, billboard, rows). Foco em detalhes que o Netflix tem e que ainda nao foram implementados.
 
-## O Que Muda Visualmente
+---
 
-### 1. Header (Barra de Navegacao)
-**Hoje:** Logo "DECODE" em vermelho + icones soltos
-**Netflix:** Fundo preto solido com gradiente sutil para transparente, logo vermelho a esquerda, navegacao horizontal inline (links como "Loja", "Links", etc.), icones de busca/notificacao/perfil a direita com avatar pequeno redondo
+## Melhorias Propostas
 
-- Remover botao de hamburguer do header (mover para drawer lateral apenas)
-- Adicionar navegacao inline com os nomes das categorias (Inicio, Loja, Links)
-- Avatar do perfil pequeno (32px) no canto direito substituindo o icone de 3 pontos
-- Fundo: gradiente de preto solido para transparente ao rolar
+### 1. Maturity Rating Badge no Billboard
+O Netflix sempre mostra uma classificacao (ex: "16+", "L") no canto do billboard. Adicionar um badge discreto de categoria do produto em destaque no hero.
 
-### 2. Hero / Billboard (Substituir HeaderProfile)
-**Hoje:** Avatar + nome + bio em linha horizontal simples
-**Netflix:** Banner grande (hero) com imagem de destaque, titulo grande, descricao curta, e botoes de acao
+### 2. Top 10 Badge nos Cards
+O Netflix mostra numeros grandes (1, 2, 3...) ao lado dos itens mais populares. Criar uma variacao na row "Destaques" com numeracao estilo Netflix ao lado dos thumbnails.
 
-- Transformar o HeaderProfile em um "Billboard" estilo Netflix
-- Usar o produto destaque (featured) como imagem de fundo do hero
-- Nome da loja e bio sobrepostos na imagem com gradiente escuro
-- Botoes: "Ver Loja" (branco) e "Mais Informacoes" (cinza translucido)
-- Altura: ~60vh no desktop, ~40vh no mobile
+### 3. "Minha Lista" / Notificacao integrada ao card
+No hover do card, o botao "+" atualmente abre WhatsApp. Manter isso mas adicionar um icone de "sino" (notificacao) ao lado, integrando com o sistema de push ja existente.
 
-### 3. Linhas de Produtos (Product Rows)
-**Hoje:** Cards com 260px, bordas arredondadas, badge neon, botao WhatsApp visivel
-**Netflix:** Thumbnails horizontais (landscape 16:9), sem bordas, hover expande o card com info overlay, titulo da linha a esquerda em branco
+### 4. Efeito de som/haptic no hover (visual apenas)
+Adicionar uma micro-animacao de "breathing" sutil no card ao entrar no hover (antes do scale 1.3x) - um leve brilho na borda superior.
 
-- Cards em formato **landscape** (ratio 16:9) em vez de quadrados
-- Largura: ~230px mobile, ~300px desktop
-- Sem bordas arredondadas exageradas (usar rounded-md, nao rounded-2xl)
-- Remover botao WhatsApp do card (mover para o hover/modal)
-- No hover: card escala 1.3x, mostra overlay com titulo + preco + botao play/detalhes
-- Titulo do produto aparece embaixo do thumbnail normalmente, mas no hover aparece no overlay
-- Setas de navegacao: circulos semi-transparentes grandes nas laterais (estilo Netflix)
-- Remover scroll progress bar (Netflix nao tem)
-- Manter as 3 linhas: "Destaques", "Minha Loja", "Principais escolhas para voce"
+### 5. Netflix-style "More Info" Modal
+O ProductModal atual usa Dialog padrao. Transformar para abrir "inline" expandindo o card para baixo (como Netflix faz ao clicar na seta), com o Dialog completo apenas ao clicar em "Play".
 
-### 4. Links Section
-**Hoje:** Cards gradientes coloridos em pill format
-**Netflix:** Manter como uma linha horizontal mas com visual mais limpo, cards menores e mais escuros
+### 6. Skeleton Loading igual Netflix
+O Netflix mostra placeholders animados em forma de retangulos cinza pulsantes nas rows. Os skeletons atuais sao genericos - ajustar para ter o formato exato 16:9 dos cards.
 
-- Cards com fundo cinza escuro (#181818) em vez de gradientes coloridos
-- Icone + titulo apenas, sem dominio
-- Hover: borda vermelha sutil
+### 7. Smooth scroll com snap nos carrosseis
+Adicionar `scroll-snap-type: x mandatory` nos carrosseis de produtos para que ao rolar, os cards "encaixem" suavemente.
 
-### 5. Secao de Anuncios
-- Manter o carrossel mas remover bordas arredondadas excessivas (rounded-lg em vez de rounded-2xl)
-- Overlay de info no hover mais sutil
-- Badge "Patrocinado" mais discreto
+### 8. Header: esconder ao rolar para baixo, mostrar ao rolar para cima
+Netflix esconde o header quando voce rola para baixo e mostra quando rola para cima. Implementar esse comportamento com framer-motion.
 
-### 6. Footer
-**Hoje:** Brand centralizado + icones sociais + copyright
-**Netflix:** Links em colunas (cinza), copyright discreto, tudo muito minimalista
-
-- Layout em colunas com links (WhatsApp, Instagram, Email como texto, nao icones)
-- Cor: cinza escuro (#737373)
-- Sem animacoes de hover elaboradas
-
-### 7. Mobile Menu (Sidebar)
-**Hoje:** Fundo card com icones em circulos coloridos
-**Netflix:** Fundo preto solido, itens em lista simples, sem circulos decorativos
-
-- Fundo: preto solido (#141414)
-- Itens: texto branco simples com icone a esquerda, sem circulos bg
-- Avatar do perfil no topo do menu
-
-### 8. Forcar Tema Escuro como Padrao
-- Netflix e sempre escuro. Forcar dark mode como padrao no carregamento
-- Manter o toggle de tema no header para quem quiser light mode
+### 9. Transicao de fade na troca de categorias
+Quando o usuario troca a categoria nos filtros, os produtos devem fazer um fade out/in suave em vez de trocar instantaneamente.
 
 ---
 
@@ -78,73 +41,51 @@ Transformar a interface publica do app para ser visualmente identica ao Netflix,
 
 ### Arquivos Modificados
 
-**1. `src/index.css`** - Ajustar cores dark mode
-- `--background` dark: `0 0% 5%` (Netflix #141414 em vez de #0a0a0a)
-- `--card` dark: `0 0% 11%` (#1c1c1c)
-- `--secondary` dark: `0 0% 18%` (#2d2d2d)
-- `--border` dark: `0 0% 14%` (mais escuro)
-- Adicionar classes utilitarias: `.netflix-row-title`, `.netflix-thumbnail`
+**1. `src/components/HeroBillboard.tsx`**
+- Adicionar badge de classificacao/categoria no canto inferior direito (ex: badge com categoria do produto featured)
+- Adicionar efeito de "vignette" mais forte nas bordas
 
-**2. `src/pages/Index.tsx`** - Reestruturar layout
-- Substituir `HeaderProfile` por novo componente `HeroBillboard`
-- Header: remover hamburguer, adicionar nav inline, avatar pequeno
-- Remover `space-y-10`, usar `space-y-8` ou `-mt-4` para rows mais juntas (Netflix e compacto)
-- Forcar `dark` class no mount se nao definido
+**2. `src/components/ProductCard.tsx`**
+- Aceitar prop `rank?: number` para exibir numeracao Top 10
+- Quando `rank` existe, renderizar numero grande (text-7xl font-black) ao lado esquerdo do card com stroke/outline
+- Adicionar micro-brilho (gradient shimmer) na borda superior ao iniciar hover
 
-**3. `src/components/HeaderProfile.tsx` -> Novo `src/components/HeroBillboard.tsx`**
-- Buscar produto featured para background
-- Gradiente: `bg-gradient-to-r from-black/80 via-black/40 to-transparent` sobre a imagem
-- Titulo grande (text-4xl bold), descricao (text-lg), 2 botoes
+**3. `src/components/ProductSection.tsx`**
+- Passar `rank` para cards na row "Destaques" (index + 1)
+- Adicionar `scroll-snap-type: x mandatory` e `scroll-snap-align: start` nos carrosseis
+- Envolver lista filtrada em `AnimatePresence` + `motion.div` com fade transition ao trocar categoria
+- Renomear "Destaques" para "Top 10 no Brasil Hoje" quando houver >= 3 featured
 
-**4. `src/components/ProductCard.tsx`** - Redesign completo
-- Aspect ratio: 16:9 (landscape) em vez de square
-- Remover bordas neon, gradientes purple
-- Remover botao WhatsApp do card
-- Hover: `scale(1.3)`, overlay escuro com titulo + preco + icone play
-- Transicao: 300ms ease com z-index elevado no hover
-- Tamanho: `w-[230px] sm:w-[300px]`
+**4. `src/components/SkeletonLoaders.tsx`**
+- Ajustar `ProductsSkeleton` para usar aspect-video e mesmas dimensoes dos cards reais (w-[230px] sm:w-[300px])
 
-**5. `src/components/ProductSection.tsx`** - Ajustar layout das rows
-- Remover `ScrollProgressBar`
-- Setas: full-height gradient overlays nos lados (como Netflix)
-- Titulos: branco, sem icones decorativos (remover Flame, ShoppingCart, Sparkles)
-- Category chips: estilo Netflix (underline no ativo, sem pill background)
+**5. `src/pages/Index.tsx`**
+- Implementar logica de "hide on scroll down, show on scroll up" no header usando `useMotionValueEvent` do framer-motion
+- Manter o gradiente transparente-para-solido ja existente
 
-**6. `src/components/LinkCard.tsx`** - Simplificar
-- Fundo: `bg-[#2d2d2d]` uniforme
-- Remover gradientes coloridos e pattern overlay
-- Hover: `ring-1 ring-primary`
+**6. `src/components/ProductModal.tsx`**
+- Ajustar fundo para `bg-[#181818]` fixo (mais Netflix)
+- Remover bordas coloridas, usar `border-[#2a2a2a]`
+- Botao CTA: manter verde mas sem glow exagerado
 
-**7. `src/components/LinksSection.tsx`** - Titulo simples
-- "Links Rapidos" em branco, sem animacao de entrada elaborada
+### Detalhes do Top 10
+O Netflix renderiza numeros grandes com borda/stroke ao lado dos thumbnails. Implementacao:
+- Numero em `text-[80px] font-black` com `-webkit-text-stroke: 2px` em cinza
+- Card deslocado para direita para abrir espaco para o numero
+- Apenas na row "Destaques" / "Top 10"
 
-**8. `src/components/AdsSection.tsx`** - Ajustes visuais
-- Reduzir rounded de 2xl para lg
-- Badge patrocinado mais discreto
+### Header Hide/Show
+Usar `useMotionValueEvent(scrollY, "change")` para detectar direcao do scroll:
+- Scroll down: `translateY(-100%)`
+- Scroll up: `translateY(0)`
+- Transicao suave de 300ms
 
-**9. `src/components/Footer.tsx`** - Estilo Netflix
-- Layout em grid de links textuais cinza
-- Sem icones grandes, sem animacoes bounce
-
-**10. `src/components/MobileMenu.tsx`** - Escurecer
-- Fundo #141414
-- Itens simples sem circulos decorativos
-
-**11. `src/components/ProductModal.tsx`** - Manter funcionalidade
-- Apenas ajustar cores para combinar (fundo mais escuro, menos bordas coloridas)
-
-### Comportamento de Hover dos Cards (Netflix Signature)
-O hover dos product cards e o elemento mais marcante do Netflix:
-- Card normal: thumbnail simples, titulo embaixo
-- Hover: card **escala 1.3x**, z-index 50, sombra grande, overlay aparece com:
-  - Titulo em branco bold
-  - Preco
-  - Badges (tags)
-  - Mini botoes: "play" (ver detalhes) e "+" (WhatsApp)
-- Delay de 300ms antes do hover ativar (para nao ativar ao passar rapido)
-
-### Nenhuma Funcionalidade Perdida
-- Todos os hooks (useProducts, useLinks, useAds, useProfile, etc.) continuam iguais
-- WhatsApp float, notificacoes, busca, admin - tudo mantido
-- Dados do banco, cupons, analytics - intactos
-- Apenas a camada visual e reestruturada
+### Scroll Snap
+Adicionar nos containers de scroll:
+```text
+scroll-snap-type: x mandatory
+```
+E nos items:
+```text
+scroll-snap-align: start
+```
