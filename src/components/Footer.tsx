@@ -10,8 +10,8 @@ export function Footer() {
 
   const externalLinks = [
     { label: 'WhatsApp', href: whatsappUrl },
-    { label: 'Instagram', href: 'https://instagram.com' },
-    { label: 'Email', href: 'mailto:contato@decode.com' },
+    { label: 'Instagram', href: 'https://instagram.com/decoanalytics' },
+    { label: 'Email', href: 'mailto:decoanalytics@outlook.com.br' },
   ];
 
   const siteLinks = [
