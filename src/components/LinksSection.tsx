@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useLinks } from '@/hooks/useLinks';
 import { LinkCard } from './LinkCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export function LinksSection() {
   const { data: links, isLoading } = useLinks();
@@ -17,10 +18,10 @@ export function LinksSection() {
   if (isLoading) {
     return (
       <div className="space-y-3 px-4">
-        <div className="h-5 w-20 bg-secondary rounded animate-pulse" />
-        <div className="flex gap-2 overflow-hidden">
+        <div className="h-5 w-24 bg-secondary rounded-full animate-pulse" />
+        <div className="flex gap-3 overflow-hidden">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="w-[180px] h-20 bg-secondary rounded-md animate-pulse flex-shrink-0" />
+            <div key={i} className="w-[160px] h-24 bg-secondary rounded-2xl animate-pulse flex-shrink-0" />
           ))}
         </div>
       </div>
@@ -31,8 +32,15 @@ export function LinksSection() {
   if (activeLinks.length === 0) return null;
 
   return (
-    <section className="relative">
-      <h2 className="text-lg font-bold text-foreground px-4 mb-3">Links Rápidos</h2>
+    <section id="links-section" className="relative">
+      <motion.h2
+        className="text-lg font-bold text-foreground px-4 mb-3"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        🔗 Links Rápidos
+      </motion.h2>
 
       <div className="relative group">
         <button
@@ -44,7 +52,7 @@ export function LinksSection() {
 
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide px-4 scroll-smooth"
+          className="flex gap-3 overflow-x-auto scrollbar-hide px-4 scroll-smooth"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {activeLinks.map((link, index) => (

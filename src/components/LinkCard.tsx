@@ -12,6 +12,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Search, Filter, Layout, Grid, List, Menu, MoreHorizontal, Play
 };
 
+const categoryGradients: Record<string, string> = {
+  social: 'from-pink-500 via-rose-500 to-red-500',
+  content: 'from-violet-500 via-purple-500 to-indigo-500',
+  store: 'from-emerald-500 via-green-500 to-teal-500',
+};
+
 interface LinkCardProps {
   link: Link;
   index?: number;
@@ -20,6 +26,7 @@ interface LinkCardProps {
 export function LinkCard({ link, index = 0 }: LinkCardProps) {
   const incrementClick = useIncrementLinkClick();
   const Icon = iconMap[link.icon] || ExternalLink;
+  const gradient = categoryGradients[link.category] || 'from-blue-500 via-cyan-500 to-teal-500';
 
   const handleClick = () => {
     incrementClick.mutate(link.id);
@@ -31,19 +38,26 @@ export function LinkCard({ link, index = 0 }: LinkCardProps) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className="relative block flex-shrink-0 w-[180px] sm:w-[200px] group"
+      className="relative block flex-shrink-0 w-[160px] sm:w-[180px] group"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.98 }}
     >
-      <div className="h-20 rounded-md overflow-hidden bg-secondary border border-transparent hover:ring-1 hover:ring-primary transition-all">
-        <div className="h-full p-3 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
-            <Icon className="w-5 h-5 text-foreground" />
+      <div className={`h-24 rounded-2xl overflow-hidden bg-gradient-to-br ${gradient} relative shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.2) 0%, transparent 40%)'
+          }} />
+        </div>
+
+        <div className="relative h-full p-3 flex flex-col justify-between">
+          <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <Icon className="w-4.5 h-4.5 text-white" />
           </div>
-          <h3 className="text-foreground font-medium text-sm truncate">
+          <h3 className="text-white font-semibold text-sm leading-tight truncate">
             {link.title}
           </h3>
         </div>
