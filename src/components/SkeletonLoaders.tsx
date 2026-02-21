@@ -51,15 +51,14 @@ export function ProfileSkeleton() {
 export function ProductCardSkeleton() {
   return (
     <motion.div 
-      className="flex-shrink-0 w-36 space-y-3"
+      className="flex-shrink-0 w-[230px] sm:w-[300px] space-y-2"
       animate={{ opacity: [0.5, 1, 0.5] }}
       transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' as const }}
     >
-      <ShimmerSkeleton className="w-full aspect-[3/4] rounded-xl" />
-      <div className="space-y-2 px-1">
+      <ShimmerSkeleton className="w-full aspect-video rounded-md" />
+      <div className="space-y-1.5 px-1">
         <ShimmerSkeleton className="h-3 w-full" />
         <ShimmerSkeleton className="h-3 w-2/3" />
-        <ShimmerSkeleton className="h-4 w-1/2" />
       </div>
     </motion.div>
   );

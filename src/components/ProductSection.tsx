@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { ProductCard } from './ProductCard';
 import { ProductModal } from './ProductModal';
@@ -59,7 +59,8 @@ export function ProductSection() {
   const renderCarousel = (
     ref: React.RefObject<HTMLDivElement>,
     productList: Product[],
-    keyPrefix: string = ''
+    keyPrefix: string = '',
+    showRank: boolean = false
   ) => (
     <div className="relative group">
       {/* Left Arrow - Netflix style full-height gradient */}
@@ -74,20 +75,22 @@ export function ProductSection() {
       <motion.div
         ref={ref as any}
         className="flex gap-1 overflow-x-auto scrollbar-hide px-4 scroll-smooth pb-8"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'x mandatory' }}
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-30px" }}
       >
-        {productList.map((product) => (
+        {productList.map((product, idx) => (
           <motion.div
             key={`${keyPrefix}${product.id}`}
             variants={itemVariants}
+            style={{ scrollSnapAlign: 'start' }}
           >
             <ProductCard
               product={product}
               onClick={() => setSelectedProduct(product)}
+              rank={showRank ? idx + 1 : undefined}
             />
           </motion.div>
         ))}
@@ -124,18 +127,30 @@ export function ProductSection() {
         </div>
       </div>
 
-      {/* Featured Products - Destaques */}
+      {/* Featured Products - Top 10 */}
       {featuredProducts.length > 0 && selectedCategory === 'Todos' && (
         <section className="relative mb-2">
-          <h2 className="text-xl font-bold text-foreground px-4 mb-3">Destaques</h2>
-          {renderCarousel(scrollRef1, featuredProducts, 'featured-')}
+          <h2 className="text-xl font-bold text-foreground px-4 mb-3">
+            {featuredProducts.length >= 3 ? 'Top 10 no Brasil Hoje' : 'Destaques'}
+          </h2>
+          {renderCarousel(scrollRef1, featuredProducts, 'featured-', featuredProducts.length >= 3)}
         </section>
       )}
 
       {/* All Products - Minha Loja */}
       <section className="relative mb-2">
         <h2 className="text-xl font-bold text-foreground px-4 mb-3">Minha Loja</h2>
-        {renderCarousel(scrollRef2, filteredProducts, 'store-')}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedCategory}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderCarousel(scrollRef2, filteredProducts, 'store-')}
+          </motion.div>
+        </AnimatePresence>
       </section>
 
       {/* Recommendations */}

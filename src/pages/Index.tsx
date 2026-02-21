@@ -11,19 +11,29 @@ import { SearchOverlay } from '@/components/SearchOverlay';
 import { Footer } from '@/components/Footer';
 import { Search, Menu, Sun, Moon, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { useProfile } from '@/hooks/useProfile';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
   const { theme, setTheme } = useTheme();
   const { data: profile } = useProfile();
   
   const { scrollY } = useScroll();
   const smoothScrollY = useSpring(scrollY, { stiffness: 100, damping: 30 });
   const headerBgOpacity = useTransform(smoothScrollY, [0, 80], [0, 1]);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    if (latest > 80) {
+      setHeaderVisible(latest < previous);
+    } else {
+      setHeaderVisible(true);
+    }
+  });
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -33,9 +43,8 @@ const Index = () => {
       {/* Netflix-style Header */}
       <motion.header
         className="fixed top-0 left-0 right-0 z-40"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
+        animate={{ y: headerVisible ? 0 : '-100%' }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
       >
         {/* Solid bg that appears on scroll */}
         <motion.div

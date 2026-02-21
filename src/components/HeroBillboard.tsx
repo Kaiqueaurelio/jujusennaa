@@ -38,9 +38,19 @@ export function HeroBillboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-card to-background" />
         )}
 
-        {/* Gradient overlays */}
+        {/* Gradient overlays + stronger vignette */}
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+        <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 100px 40px hsl(var(--background))' }} />
+
+        {/* Category badge - maturity rating style */}
+        {featuredProduct && (
+          <div className="absolute bottom-[15%] right-4 sm:right-12 flex items-center gap-2 z-10">
+            <div className="px-3 py-1 border-l-2 border-foreground/50 bg-background/40 backdrop-blur-sm text-foreground/80 text-sm font-medium">
+              {featuredProduct.category}
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="absolute bottom-[15%] left-0 px-4 sm:px-12 max-w-xl z-10">
