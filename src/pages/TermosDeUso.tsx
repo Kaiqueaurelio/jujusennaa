@@ -103,7 +103,7 @@ export default function TermosDeUso() {
               Para dúvidas, sugestões ou reclamações relacionadas a estes Termos de Uso, entre em contato conosco:
             </p>
             <ul className="mt-2 space-y-1">
-              <li>📧 E-mail: <a href="mailto:contato@decode.com" className="text-primary hover:underline">contato@decode.com</a></li>
+              <li>📧 E-mail: <a href="mailto:decoanalytics@outlook.com.br" className="text-primary hover:underline">decoanalytics@outlook.com.br</a></li>
               <li>💬 WhatsApp: disponível na página de <Link to="/contato" className="text-primary hover:underline">Contato</Link></li>
             </ul>
           </section>
