@@ -8,6 +8,9 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import TermosDeUso from "./pages/TermosDeUso";
+import Privacidade from "./pages/Privacidade";
+import Contato from "./pages/Contato";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/termos" element={<TermosDeUso />} />
+              <Route path="/privacidade" element={<Privacidade />} />
+              <Route path="/contato" element={<Contato />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
