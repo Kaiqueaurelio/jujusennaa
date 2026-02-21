@@ -122,7 +122,7 @@ export function AdsSection() {
             onDragEnd={handleDragEnd}
             style={{ x: dragX, opacity: dragOpacity }}
           >
-            <div className="relative mx-4 overflow-hidden rounded-2xl">
+            <div className="relative mx-4 overflow-hidden rounded-lg">
               {(() => {
                 const lower = currentAd.image.toLowerCase();
                 const isVideo = lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov');

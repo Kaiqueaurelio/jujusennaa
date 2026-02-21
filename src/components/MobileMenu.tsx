@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Home, ShoppingBag, Link2, Settings, User, Bell, LogOut } from 'lucide-react';
+import { X, Home, ShoppingBag, Link2, Settings, User, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useProfile } from '@/hooks/useProfile';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -17,13 +18,15 @@ const menuItems = [
 ];
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const { data: profile } = useProfile();
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/70 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -33,71 +36,59 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* Sidebar */}
           <motion.div
-            className="fixed top-0 left-0 bottom-0 w-72 bg-card border-r border-border z-50 overflow-hidden"
+            className="fixed top-0 left-0 bottom-0 w-72 bg-background z-50 overflow-hidden border-r border-border/30"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <motion.h2 
-                className="text-xl font-bold text-primary"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                DECODE
-              </motion.h2>
-              <motion.button
+            {/* Header with profile */}
+            <div className="flex items-center gap-3 p-4 border-b border-border/30">
+              {profile?.avatar ? (
+                <img src={profile.avatar} alt={profile.name} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                  <span className="text-sm font-bold text-foreground">{profile?.name?.charAt(0) || 'D'}</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{profile?.name || 'DECODE'}</p>
+              </div>
+              <button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-secondary transition-colors"
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
+                className="p-1.5 rounded hover:bg-secondary transition-colors"
               >
                 <X className="w-5 h-5 text-foreground" />
-              </motion.button>
+              </button>
             </div>
 
-            {/* Menu Items */}
-            <nav className="p-4 space-y-1">
+            {/* Menu Items - simple list */}
+            <nav className="p-2">
               {menuItems.map((item, index) => (
                 <motion.div
                   key={item.label}
-                  initial={{ opacity: 0, x: -30 }}
+                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + index * 0.05 }}
+                  transition={{ delay: 0.05 + index * 0.04 }}
                 >
                   <Link
                     to={item.href}
                     onClick={onClose}
-                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary transition-all group"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded hover:bg-secondary transition-colors"
                   >
-                    <motion.div
-                      className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      <item.icon className="w-5 h-5 text-primary" />
-                    </motion.div>
-                    <span className="text-foreground font-medium group-hover:text-primary transition-colors">
-                      {item.label}
-                    </span>
+                    <item.icon className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-foreground text-sm">{item.label}</span>
                   </Link>
                 </motion.div>
               ))}
             </nav>
 
             {/* Footer */}
-            <motion.div 
-              className="absolute bottom-0 left-0 right-0 p-4 border-t border-border"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <p className="text-xs text-muted-foreground text-center">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/30">
+              <p className="text-xs text-muted-foreground/60">
                 © {new Date().getFullYear()} Decode Analytics
               </p>
-            </motion.div>
+            </div>
           </motion.div>
         </>
       )}
