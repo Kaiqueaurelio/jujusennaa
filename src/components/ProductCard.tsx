@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { Product } from '@/hooks/useProducts';
-import { Eye, MessageCircle, Flame, TrendingUp } from 'lucide-react';
+import { Play, Plus, ChevronDown, Flame, TrendingUp } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { getProductImage } from '@/data/productImages';
 
@@ -11,8 +11,8 @@ interface ProductCardProps {
 }
 
 function getBadge(product: Product): { text: string; color: string; icon?: 'flame' | 'trending' } | null {
-  if (product.tags?.includes('mais vendido')) return { text: 'Mais Vendido', color: 'bg-orange-500', icon: 'flame' };
-  if (product.tags?.includes('popular')) return { text: 'Popular', color: 'bg-orange-500', icon: 'flame' };
+  if (product.tags?.includes('mais vendido')) return { text: 'Mais Vendido', color: 'bg-primary', icon: 'flame' };
+  if (product.tags?.includes('popular')) return { text: 'Popular', color: 'bg-primary', icon: 'flame' };
   if (product.featured) return { text: 'Premium', color: 'bg-primary' };
   if (product.tags?.includes('novo')) return { text: 'Novo', color: 'bg-emerald-500', icon: 'trending' };
   return null;
@@ -20,6 +20,7 @@ function getBadge(product: Product): { text: string; color: string; icon?: 'flam
 
 export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
   const { data: profile } = useProfile();
+  const [isHovered, setIsHovered] = useState(false);
   
   const badge = getBadge(product);
   const productImage = getProductImage(product.image);
@@ -28,10 +29,6 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
 
-  const savings = product.originalPrice && product.originalPrice > product.price
-    ? product.originalPrice - product.price
-    : 0;
-  
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     const whatsapp = profile?.whatsapp || '5511939222885';
@@ -41,140 +38,120 @@ export function ProductCard({ product, onClick, index = 0 }: ProductCardProps) {
     window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
   };
 
-  const isFeatured = product.featured;
-
   return (
-    <div className="flex-shrink-0 w-[260px] sm:w-[280px]">
-      <div 
-        className={`relative rounded-2xl overflow-hidden bg-card border group cursor-pointer ${
-          isFeatured ? 'border-transparent' : 'border-border/50'
-        }`}
+    <div className="flex-shrink-0 w-[230px] sm:w-[300px]">
+      <div
+        className="relative rounded-md overflow-hidden bg-card cursor-pointer transition-all duration-300 ease-out"
         style={{
-          boxShadow: isFeatured
-            ? '0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)'
-            : '0 0 20px rgba(139, 92, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
+          transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+          zIndex: isHovered ? 50 : 1,
+          boxShadow: isHovered ? '0 16px 48px hsl(0 0% 0% / 0.7)' : 'none',
+          transitionDelay: isHovered ? '0ms' : '0ms',
         }}
+        onMouseEnter={() => {
+          const timer = setTimeout(() => setIsHovered(true), 300);
+          (window as any).__hoverTimer = timer;
+        }}
+        onMouseLeave={() => {
+          clearTimeout((window as any).__hoverTimer);
+          setIsHovered(false);
+        }}
+        onClick={onClick}
       >
-        {isFeatured && (
-          <>
-            <div 
-              className="absolute inset-0 rounded-2xl z-0"
-              style={{
-                background: 'linear-gradient(90deg, #8b5cf6, #d946ef, #06b6d4, #8b5cf6)',
-                backgroundSize: '300% 100%',
-                animation: 'neonBorderFlow 3s linear infinite',
-                padding: '2px',
-              }}
-            />
-            <div className="absolute inset-[2px] rounded-2xl bg-card z-0" />
-          </>
-        )}
-
-        {/* Image Container */}
-        <div 
-          className="relative aspect-square overflow-hidden z-[1]"
-          onClick={onClick}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-background/50 pointer-events-none z-10" />
-          
+        {/* Thumbnail 16:9 */}
+        <div className="relative aspect-video overflow-hidden">
           {productImage ? (
-            <motion.img 
-              layoutId={`product-image-${product.id}`}
-              src={productImage} 
+            <img
+              src={productImage}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-900/30 via-card to-background flex items-center justify-center">
-              <span className="text-foreground/30 text-6xl font-bold">{product.name.charAt(0)}</span>
+            <div className="w-full h-full bg-secondary flex items-center justify-center">
+              <span className="text-muted-foreground text-4xl font-bold">{product.name.charAt(0)}</span>
             </div>
           )}
 
-          {/* Badge de popularidade */}
-          {badge && (
-            <motion.div 
-              className={`absolute top-3 left-3 px-3 py-1 rounded-md ${badge.color} text-white text-xs font-semibold z-20 flex items-center gap-1`}
-              initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: index * 0.1 + 0.2, type: 'spring', stiffness: 200 }}
-            >
+          {/* Badge */}
+          {badge && !isHovered && (
+            <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold text-white ${badge.color} flex items-center gap-1`}>
               {badge.icon === 'flame' && <Flame className="w-3 h-3" />}
               {badge.icon === 'trending' && <TrendingUp className="w-3 h-3" />}
               {badge.text}
-            </motion.div>
+            </div>
           )}
 
-          {/* Badge de desconto */}
-          {discount > 0 && (
-            <motion.div
-              className="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-emerald-500 text-white text-xs font-bold z-20"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: index * 0.1 + 0.3, type: 'spring', stiffness: 300 }}
-            >
-              -{discount}% OFF
-            </motion.div>
+          {/* Discount badge */}
+          {discount > 0 && !isHovered && (
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold text-white bg-emerald-500">
+              -{discount}%
+            </div>
           )}
 
-          <motion.div 
-            className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
-            initial={false}
-          >
-            <motion.button
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 border border-foreground/30 text-foreground hover:bg-foreground/20 transition-colors"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onClick}
-            >
-              <Eye className="w-5 h-5" />
-              <span className="font-medium">Ver detalhes</span>
-            </motion.button>
-          </motion.div>
-
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-card to-transparent z-10" />
+          {/* Hover Overlay */}
+          {isHovered && (
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+          )}
         </div>
 
-        {/* Product Info */}
-        <div className="relative z-[1] p-4 space-y-2">
-          <h3 className="font-semibold text-foreground text-base line-clamp-2 min-h-[48px]">
-            {product.name}
-          </h3>
+        {/* Normal title (below thumbnail) */}
+        {!isHovered && (
+          <div className="p-2">
+            <h3 className="text-sm font-medium text-foreground truncate">{product.name}</h3>
+          </div>
+        )}
 
-          {/* Descrição curta */}
-          <p className="text-muted-foreground text-xs line-clamp-2 min-h-[32px]">
-            {product.description}
-          </p>
+        {/* Hover expanded info */}
+        {isHovered && (
+          <div className="p-3 space-y-2 bg-card">
+            {/* Action buttons row */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); onClick(); }}
+                className="w-8 h-8 rounded-full border-2 border-foreground bg-foreground text-background flex items-center justify-center hover:bg-foreground/90 transition-colors"
+              >
+                <Play className="w-4 h-4 fill-current ml-0.5" />
+              </button>
+              <button
+                onClick={handleWhatsAppClick}
+                className="w-8 h-8 rounded-full border-2 border-muted-foreground/50 text-foreground flex items-center justify-center hover:border-foreground transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <div className="flex-1" />
+              <button
+                onClick={(e) => { e.stopPropagation(); onClick(); }}
+                className="w-8 h-8 rounded-full border-2 border-muted-foreground/50 text-foreground flex items-center justify-center hover:border-foreground transition-colors"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
 
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-2">
-              <span className="text-primary font-bold text-xl">
+            {/* Title + Price */}
+            <h3 className="text-sm font-bold text-foreground truncate">{product.name}</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-primary font-bold text-sm">
                 R$ {product.price.toFixed(2).replace('.', ',')}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-muted-foreground text-sm line-through">
+                <span className="text-muted-foreground text-xs line-through">
                   R$ {product.originalPrice.toFixed(2).replace('.', ',')}
                 </span>
               )}
             </div>
 
-            {/* Economia */}
-            {savings > 0 && (
-              <p className="text-emerald-500 text-xs font-semibold">
-                Economize R$ {savings.toFixed(2).replace('.', ',')}
-              </p>
+            {/* Tags */}
+            {product.tags && product.tags.length > 0 && (
+              <div className="flex gap-1 flex-wrap">
+                {product.tags.slice(0, 3).map(tag => (
+                  <span key={tag} className="text-[10px] text-muted-foreground border border-border rounded px-1.5 py-0.5">
+                    {tag}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
-
-          <motion.button
-            onClick={handleWhatsAppClick}
-            className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <MessageCircle className="w-5 h-5" />
-            Comprar pelo WhatsApp
-          </motion.button>
-        </div>
+        )}
       </div>
     </div>
   );
