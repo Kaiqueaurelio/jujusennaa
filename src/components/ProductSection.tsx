@@ -21,59 +21,32 @@ const itemVariants = {
   }
 };
 
-export function ProductSection() {
-  const { data: products, isLoading } = useProducts();
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
-  const scrollRef1 = useRef<HTMLDivElement>(null);
-  const scrollRef2 = useRef<HTMLDivElement>(null);
-  const scrollRef3 = useRef<HTMLDivElement>(null);
+const CATEGORY_ORDER = ['Informática', 'Mídias Sociais', 'Edição', 'Templates Notion', 'Acadêmicos'];
 
-  const activeProducts = useMemo(() => 
-    products?.filter(p => p.active).sort((a, b) => a.order - b.order) || []
-  , [products]);
+function CarouselRow({ products, keyPrefix, onSelect }: {
+  products: Product[];
+  keyPrefix: string;
+  onSelect: (p: Product) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const categories = useMemo(() => {
-    const cats = [...new Set(activeProducts.map(p => p.category))];
-    return ['Todos', ...cats];
-  }, [activeProducts]);
-
-  const featuredProducts = useMemo(() => activeProducts.filter(p => p.featured), [activeProducts]);
-  const filteredProducts = useMemo(() => 
-    selectedCategory === 'Todos'
-      ? activeProducts
-      : activeProducts.filter(p => p.category === selectedCategory)
-  , [activeProducts, selectedCategory]);
-
-  const scroll = useCallback((ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
-    if (ref.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: direction === 'left' ? -300 : 300, behavior: 'smooth' });
     }
-  }, []);
+  };
 
-  if (isLoading) {
-    return <ProductsSkeleton />;
-  }
-
-  const renderCarousel = (
-    ref: React.RefObject<HTMLDivElement>,
-    productList: Product[],
-    keyPrefix: string = '',
-    showRank: boolean = false
-  ) => (
+  return (
     <div className="relative group">
-      {/* Left Arrow - Netflix style full-height gradient */}
       <button
         className="absolute left-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-r from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-start pl-1"
-        onClick={() => scroll(ref, 'left')}
+        onClick={() => scroll('left')}
       >
         <ChevronLeft className="w-8 h-8 text-foreground" />
       </button>
 
-      {/* Scrollable Container */}
       <motion.div
-        ref={ref as any}
+        ref={scrollRef}
         className="flex gap-1 overflow-x-auto scrollbar-hide px-4 scroll-smooth pb-8"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', scrollSnapType: 'x mandatory' }}
         variants={containerVariants}
@@ -81,7 +54,7 @@ export function ProductSection() {
         whileInView="visible"
         viewport={{ once: true, margin: "-30px" }}
       >
-        {productList.map((product, idx) => (
+        {products.map((product) => (
           <motion.div
             key={`${keyPrefix}${product.id}`}
             variants={itemVariants}
@@ -89,26 +62,61 @@ export function ProductSection() {
           >
             <ProductCard
               product={product}
-              onClick={() => setSelectedProduct(product)}
-              rank={showRank ? idx + 1 : undefined}
+              onClick={() => onSelect(product)}
             />
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Right Arrow */}
       <button
         className="absolute right-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-l from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-end pr-1"
-        onClick={() => scroll(ref, 'right')}
+        onClick={() => scroll('right')}
       >
         <ChevronRight className="w-8 h-8 text-foreground" />
       </button>
     </div>
   );
+}
+
+export function ProductSection() {
+  const { data: products, isLoading } = useProducts();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+
+  const activeProducts = useMemo(() => 
+    products?.filter(p => p.active).sort((a, b) => a.order - b.order) || []
+  , [products]);
+
+  const categories = useMemo(() => {
+    const cats = [...new Set(activeProducts.map(p => p.category))];
+    const ordered = CATEGORY_ORDER.filter(c => cats.includes(c));
+    const remaining = cats.filter(c => !CATEGORY_ORDER.includes(c));
+    return ['Todos', ...ordered, ...remaining];
+  }, [activeProducts]);
+
+  const filteredProducts = useMemo(() => 
+    selectedCategory === 'Todos'
+      ? activeProducts
+      : activeProducts.filter(p => p.category === selectedCategory)
+  , [activeProducts, selectedCategory]);
+
+  const productsByCategory = useMemo(() => {
+    const cats = [...new Set(activeProducts.map(p => p.category))];
+    const ordered = CATEGORY_ORDER.filter(c => cats.includes(c));
+    const remaining = cats.filter(c => !CATEGORY_ORDER.includes(c));
+    return [...ordered, ...remaining].map(cat => ({
+      category: cat,
+      products: activeProducts.filter(p => p.category === cat),
+    }));
+  }, [activeProducts]);
+
+  if (isLoading) {
+    return <ProductsSkeleton />;
+  }
 
   return (
     <div id="product-section">
-      {/* Category Filter - Netflix underline style */}
+      {/* Category Filter */}
       <div className="px-4 mb-6">
         <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
           {categories.map((cat) => (
@@ -127,37 +135,37 @@ export function ProductSection() {
         </div>
       </div>
 
-      {/* Featured Products - Top 10 */}
-      {featuredProducts.length > 0 && selectedCategory === 'Todos' && (
+      {selectedCategory === 'Todos' ? (
+        <>
+          {productsByCategory.map((group) => (
+            <section key={group.category} className="relative mb-2">
+              <h2 className="text-xl font-bold text-foreground px-4 mb-3">{group.category}</h2>
+              <CarouselRow
+                products={group.products}
+                keyPrefix={`cat-${group.category}-`}
+                onSelect={setSelectedProduct}
+              />
+            </section>
+          ))}
+        </>
+      ) : (
         <section className="relative mb-2">
-          <h2 className="text-xl font-bold text-foreground px-4 mb-3">
-            {featuredProducts.length >= 3 ? 'Top 10 no Brasil Hoje' : 'Destaques'}
-          </h2>
-          {renderCarousel(scrollRef1, featuredProducts, 'featured-', featuredProducts.length >= 3)}
-        </section>
-      )}
-
-      {/* All Products - Minha Loja */}
-      <section className="relative mb-2">
-        <h2 className="text-xl font-bold text-foreground px-4 mb-3">Minha Loja</h2>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedCategory}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {renderCarousel(scrollRef2, filteredProducts, 'store-')}
-          </motion.div>
-        </AnimatePresence>
-      </section>
-
-      {/* Recommendations */}
-      {filteredProducts.length > 2 && selectedCategory === 'Todos' && (
-        <section className="relative mb-2">
-          <h2 className="text-xl font-bold text-foreground px-4 mb-3">Principais escolhas para você</h2>
-          {renderCarousel(scrollRef3, [...filteredProducts].reverse(), 'rec-')}
+          <h2 className="text-xl font-bold text-foreground px-4 mb-3">{selectedCategory}</h2>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedCategory}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <CarouselRow
+                products={filteredProducts}
+                keyPrefix="store-"
+                onSelect={setSelectedProduct}
+              />
+            </motion.div>
+          </AnimatePresence>
         </section>
       )}
 
