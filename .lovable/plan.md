@@ -1,34 +1,39 @@
 
 
-## Plano: Gerar thumbnails profissionais para todos os produtos via IA
+## Plano: Otimizar anúncios + Criar fluxo de checkout interativo
 
-### Situação atual
-- 32 dos 33 produtos usam imagens estáticas locais (`/src/assets/products/*.jpg`)
-- 1 produto já tem imagem gerada por IA armazenada no Storage
-- Já existe a edge function `generate-image` funcional que gera imagens com estética neon/cyberpunk premium e salva no bucket `images`
-- Já existe o modelo `google/gemini-2.5-flash-image-preview` configurado
+### 1. Otimizar performance do carrossel de anúncios
 
-### O que será feito
+**Problema:** O `AnimatePresence mode="wait"` com `drag` + `useMotionValue` + `useTransform` na mesma `motion.a` causa re-renders pesados e travamentos, especialmente no mobile.
 
-1. **Criar edge function de geração em lote** (`generate-all-images`)
-   - Recebe lista de product IDs (ou flag "all")
-   - Para cada produto, chama a mesma lógica de geração de imagem (prompt premium neon/cyberpunk)
-   - Faz upload para o bucket `images` no Storage
-   - Atualiza o campo `image_url` de cada produto no banco com a URL pública
-   - Processa sequencialmente para evitar rate limits
-   - Requer autenticação admin
+**Solução:**
+- Trocar `AnimatePresence mode="wait"` por transições CSS simples (opacity + transform) sem montar/desmontar o DOM a cada slide
+- Remover o `drag` com `useMotionValue`/`useTransform` e usar um handler de touch events nativo (touchstart/touchend) para detectar swipe, muito mais leve
+- Pré-carregar as imagens dos slides adjacentes com `<link rel="preload">`
+- Usar `will-change: transform` no container para GPU acceleration
+- Simplificar as animações dos botões de navegacao (remover `whileHover`/`whileTap` do framer-motion, usar CSS `:hover`/`:active`)
 
-2. **Adicionar botão "Gerar Todas as Imagens" no Admin**
-   - Na aba de Produtos do painel admin, adicionar um botão no topo
-   - Mostra progresso (ex: "Gerando 5/33...")
-   - Permite cancelar
-   - Ao finalizar, invalida o cache de produtos para atualizar a loja
+### 2. Criar fluxo de checkout interativo antes do WhatsApp
 
-3. **Atualizar o prompt de geração** para incluir o nome do produto visualmente na imagem, reforçando a identidade de cada thumbnail
+**O que muda:** Ao clicar em "Garantir o meu agora", ao invés de abrir o WhatsApp direto, abre um formulário de checkout em etapas dentro do modal.
+
+**Etapas do checkout:**
+1. **Quantidade** - Seletor de quantidade (1-10) com cálculo do total atualizado em tempo real
+2. **Dados do comprador** - Nome completo, E-mail, Telefone (opcional)
+3. **Resumo do pedido** - Mostra produto, quantidade, preço unitário, cupom aplicado, total final, e dados do comprador
+4. **Confirmação** - Botão "Enviar pedido via WhatsApp" que monta a mensagem completa com todos os dados
+
+**Implementação:**
+- Criar componente `CheckoutFlow.tsx` com 4 steps controlados por estado local
+- Validação com zod: nome obrigatório (min 2 chars), email obrigatório e válido, quantidade >= 1
+- Integrar dentro do `ProductModal.tsx` existente, substituindo o botão direto do WhatsApp
+- A mensagem do WhatsApp incluirá: nome do cliente, email, produto, quantidade, valor unitário, cupom (se houver), e valor total
+- Botão "Voltar" em cada etapa para o usuário revisar
 
 ### Detalhes técnicos
 
-- A edge function processará no máximo 5 produtos por vez com delay entre chamadas para evitar rate limit 429
-- O `ProductCard` já suporta URLs externas via `getProductImage()` — quando `image_url` começar com `http`, será usado diretamente sem precisar do mapeamento local
-- As imagens locais em `src/assets/products/` continuarão como fallback caso alguma geração falhe
+- O `CheckoutFlow` será um componente separado que recebe `product`, `finalPrice`, `appliedCoupon`, `whatsapp` como props
+- Sem necessidade de banco de dados - os dados são usados apenas para compor a mensagem do WhatsApp
+- Animações leves entre steps com CSS transitions (não framer-motion) para manter a fluidez
+- Mobile-first: inputs com `inputMode` adequado (email, tel, numeric)
 
