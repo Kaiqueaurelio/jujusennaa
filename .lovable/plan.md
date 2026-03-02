@@ -1,62 +1,34 @@
 
-# Criar Páginas Funcionais: Termos de Uso, Privacidade e Contato
 
-## O que será feito
+## Plano: Gerar thumbnails profissionais para todos os produtos via IA
 
-### 1. Página "Termos de Uso" (`src/pages/TermosDeUso.tsx`)
-Página completa com termos de uso reais e profissionais para a Decode Analytics, cobrindo:
-- Aceitacao dos termos
-- Descricao dos servicos oferecidos (produtos digitais, ferramentas, design, etc.)
-- Propriedade intelectual
-- Politica de pagamentos e reembolsos
-- Limitacao de responsabilidade
-- Modificacoes nos termos
-- Contato
+### Situação atual
+- 32 dos 33 produtos usam imagens estáticas locais (`/src/assets/products/*.jpg`)
+- 1 produto já tem imagem gerada por IA armazenada no Storage
+- Já existe a edge function `generate-image` funcional que gera imagens com estética neon/cyberpunk premium e salva no bucket `images`
+- Já existe o modelo `google/gemini-2.5-flash-image-preview` configurado
 
-Visual: fundo escuro (#141414), texto claro, tipografia limpa, botao de voltar ao topo.
+### O que será feito
 
-### 2. Página "Privacidade" (`src/pages/Privacidade.tsx`)
-Politica de privacidade completa cobrindo:
-- Dados coletados (nome, email, WhatsApp, navegacao)
-- Como os dados sao usados
-- Cookies e rastreamento
-- Compartilhamento com terceiros
-- Direitos do usuario (LGPD)
-- Retencao de dados
-- Contato do responsavel
+1. **Criar edge function de geração em lote** (`generate-all-images`)
+   - Recebe lista de product IDs (ou flag "all")
+   - Para cada produto, chama a mesma lógica de geração de imagem (prompt premium neon/cyberpunk)
+   - Faz upload para o bucket `images` no Storage
+   - Atualiza o campo `image_url` de cada produto no banco com a URL pública
+   - Processa sequencialmente para evitar rate limits
+   - Requer autenticação admin
 
-### 3. Página "Contato" (`src/pages/Contato.tsx`)
-Pagina simples com:
-- Email de contato
-- Link direto para WhatsApp (usando o numero do perfil)
-- Link para Instagram
-- Formulario basico (nome, email, mensagem) -- apenas visual, sem backend por enquanto
+2. **Adicionar botão "Gerar Todas as Imagens" no Admin**
+   - Na aba de Produtos do painel admin, adicionar um botão no topo
+   - Mostra progresso (ex: "Gerando 5/33...")
+   - Permite cancelar
+   - Ao finalizar, invalida o cache de produtos para atualizar a loja
 
-### 4. Atualizar Footer (`src/components/Footer.tsx`)
-- Trocar `href: '#'` por links reais usando React Router (`/termos`, `/privacidade`, `/contato`)
-- Usar `Link` do react-router-dom em vez de `<a>` para navegacao interna
+3. **Atualizar o prompt de geração** para incluir o nome do produto visualmente na imagem, reforçando a identidade de cada thumbnail
 
-### 5. Atualizar Rotas (`src/App.tsx`)
-- Adicionar 3 novas rotas: `/termos`, `/privacidade`, `/contato`
+### Detalhes técnicos
 
----
+- A edge function processará no máximo 5 produtos por vez com delay entre chamadas para evitar rate limit 429
+- O `ProductCard` já suporta URLs externas via `getProductImage()` — quando `image_url` começar com `http`, será usado diretamente sem precisar do mapeamento local
+- As imagens locais em `src/assets/products/` continuarão como fallback caso alguma geração falhe
 
-## Secao Tecnica
-
-### Novos Arquivos
-- `src/pages/TermosDeUso.tsx` -- pagina completa com texto juridico adaptado
-- `src/pages/Privacidade.tsx` -- politica de privacidade LGPD
-- `src/pages/Contato.tsx` -- informacoes de contato + formulario visual
-
-### Arquivos Modificados
-- `src/App.tsx` -- adicionar 3 rotas novas
-- `src/components/Footer.tsx` -- trocar hrefs para `/termos`, `/privacidade`, `/contato` e usar `Link` do react-router-dom
-
-### Estrutura das Paginas
-Todas as 3 paginas seguirao o mesmo layout:
-- Header simplificado com botao de voltar (seta + "Voltar") e logo "DECODE"
-- Conteudo em `max-w-3xl mx-auto` com padding
-- Fundo `bg-background` (escuro, consistente com o tema Netflix)
-- Titulos em `text-3xl font-bold text-foreground`
-- Paragrafos em `text-muted-foreground leading-relaxed`
-- Footer reutilizado no final
