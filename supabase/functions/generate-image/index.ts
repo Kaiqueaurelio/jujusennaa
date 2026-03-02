@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const prompt = `Professional high-end product photography for a digital product called "${productName}" in the ${productCategory} category. 
+    const prompt = `Professional high-end product thumbnail for a digital product called "${productName}" in the ${productCategory} category.
 
 Style requirements:
 - Hyper-realistic 3D render with cinematic lighting
@@ -100,9 +100,10 @@ Style requirements:
 - Elegant floating elements like subtle particles, light rays, or abstract geometric shapes
 - Premium luxury brand aesthetic similar to Apple or Netflix marketing
 - Sharp focus with professional depth of field
-- Color palette: deep blacks, rich crimsons, warm gold accents
+- Color palette: deep blacks, rich crimsons, warm gold accents, neon purple/magenta glows
 - Modern minimalist composition with strong visual hierarchy
 - Photorealistic textures and materials
+- The product name "${productName}" should be prominently displayed as elegant typography integrated into the design
 - 16:9 aspect ratio, 4K quality appearance
 
 The image should look like a premium marketing asset for a high-end digital product, NOT like AI-generated art. Focus on photorealism and professional product photography aesthetics.`;
@@ -114,7 +115,7 @@ The image should look like a premium marketing asset for a high-end digital prod
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
+        model: 'google/gemini-2.5-flash-image',
         messages: [{ role: 'user', content: prompt }],
         modalities: ['image', 'text'],
       }),
