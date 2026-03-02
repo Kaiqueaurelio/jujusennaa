@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { useBatchGenerateImages } from '@/hooks/useBatchGenerateImages';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts, useAddProduct, useUpdateProduct, useDeleteProduct, Product } from '@/hooks/useProducts';
 import { useLinks, useAddLink, useUpdateLink, useDeleteLink, Link as LinkType } from '@/hooks/useLinks';
@@ -60,6 +62,8 @@ export default function Admin() {
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [ellaOpen, setEllaOpen] = useState(false);
+
+  const { progress: batchProgress, generate: batchGenerate, cancel: batchCancel, reset: batchReset } = useBatchGenerateImages();
 
   if (authLoading) {
     return (
@@ -273,15 +277,57 @@ export default function Admin() {
           <TabsContent value="products">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
               <Card className="bg-card/80 border-border/50 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center justify-between pb-4">
-                  <div>
-                    <CardTitle className="text-foreground text-lg">Produtos</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">{products.length} produtos cadastrados</p>
+                <CardHeader className="flex flex-col gap-3 pb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-foreground text-lg">Produtos</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">{products.length} produtos cadastrados</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {batchProgress.status === 'idle' && (
+                        <Button onClick={() => batchGenerate(true)} variant="outline" size="sm" className="gap-2">
+                          <Sparkles className="w-4 h-4" />
+                          <span className="hidden sm:inline">Gerar Imagens IA</span>
+                          <span className="sm:hidden">IA</span>
+                        </Button>
+                      )}
+                      {batchProgress.status === 'running' && (
+                        <Button onClick={batchCancel} variant="outline" size="sm" className="gap-2 border-destructive/30 text-destructive">
+                          <X className="w-4 h-4" />
+                          Cancelar
+                        </Button>
+                      )}
+                      {(batchProgress.status === 'done' || batchProgress.status === 'cancelled') && (
+                        <Button onClick={batchReset} variant="outline" size="sm" className="gap-2">
+                          OK
+                        </Button>
+                      )}
+                      <Button onClick={() => setIsAddingProduct(true)} className="gap-2 btn-primary-glow" size="sm">
+                        <Plus className="w-4 h-4" />
+                        Novo Produto
+                      </Button>
+                    </div>
                   </div>
-                  <Button onClick={() => setIsAddingProduct(true)} className="gap-2 btn-primary-glow" size="sm">
-                    <Plus className="w-4 h-4" />
-                    Novo Produto
-                  </Button>
+                  {batchProgress.status !== 'idle' && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          {batchProgress.status === 'running' && (
+                            <span className="flex items-center gap-1.5">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Gerando: {batchProgress.productName} ({batchProgress.current}/{batchProgress.total})
+                            </span>
+                          )}
+                          {batchProgress.status === 'done' && `Concluído! ${batchProgress.successes} geradas`}
+                          {batchProgress.status === 'cancelled' && 'Cancelado'}
+                        </span>
+                        {batchProgress.errors.length > 0 && (
+                          <span className="text-destructive">{batchProgress.errors.length} erros</span>
+                        )}
+                      </div>
+                      <Progress value={batchProgress.total > 0 ? (batchProgress.current / batchProgress.total) * 100 : 0} className="h-2" />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   {isAddingProduct && (
