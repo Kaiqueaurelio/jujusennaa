@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getProductImage } from '@/data/productImages';
+import { CheckoutFlow } from '@/components/CheckoutFlow';
 
 interface ProductModalProps {
   product: Product | null;
@@ -94,6 +95,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   if (!product) return null;
 
@@ -330,33 +332,46 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               <GuaranteeBadge />
             </motion.div>
 
-            {/* CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button 
-                  onClick={handleWhatsAppClick} 
-                  className="w-full btn-primary-glow py-6 text-lg font-semibold gap-3 relative overflow-hidden group bg-emerald-500 hover:bg-emerald-600" 
-                  size="lg"
-                >
-                  <motion.div
-                    className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-                    style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)' }}
-                  />
-                  <MessageCircle className="w-6 h-6" />
-                  Garantir o meu agora
-                  <motion.div animate={{ x: [0, 5, 0] }} transition={{ duration: 1, repeat: Infinity }}>
-                    <ArrowRight className="w-5 h-5" />
-                  </motion.div>
-                </Button>
+            {/* CTA / Checkout Flow */}
+            {showCheckout ? (
+              <CheckoutFlow
+                product={product}
+                finalPrice={finalPrice}
+                appliedCoupon={appliedCoupon}
+                whatsapp={profile?.whatsapp || '5511939222885'}
+                onBack={() => setShowCheckout(false)}
+              />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    onClick={() => {
+                      if (profile) trackClick.mutate({ productId: product.id, converted: true });
+                      setShowCheckout(true);
+                    }}
+                    className="w-full btn-primary-glow py-6 text-lg font-semibold gap-3 relative overflow-hidden group bg-emerald-500 hover:bg-emerald-600" 
+                    size="lg"
+                  >
+                    <motion.div
+                      className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                      style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)' }}
+                    />
+                    <MessageCircle className="w-6 h-6" />
+                    Garantir o meu agora
+                    <motion.div animate={{ x: [0, 5, 0] }} transition={{ duration: 1, repeat: Infinity }}>
+                      <ArrowRight className="w-5 h-5" />
+                    </motion.div>
+                  </Button>
+                </motion.div>
+                <p className="text-center text-xs text-muted-foreground mt-2">
+                  ⚡ Atendimento imediato via WhatsApp
+                </p>
               </motion.div>
-              <p className="text-center text-xs text-muted-foreground mt-2">
-                ⚡ Atendimento imediato via WhatsApp
-              </p>
-            </motion.div>
+            )}
           </div>
         </motion.div>
       </DialogContent>
