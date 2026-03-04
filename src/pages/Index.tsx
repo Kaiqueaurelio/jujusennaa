@@ -4,6 +4,7 @@ import { LinksSection } from '@/components/LinksSection';
 import { ProductSection } from '@/components/ProductSection';
 import { AdsSection } from '@/components/AdsSection';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
+import { EllaPublicChat } from '@/components/EllaPublicChat';
 import { BackToTop } from '@/components/BackToTop';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
@@ -107,6 +108,7 @@ const Index = () => {
       </div>
 
       <BackToTop />
+      <EllaPublicChat />
       <FloatingWhatsApp />
     </div>
   );
