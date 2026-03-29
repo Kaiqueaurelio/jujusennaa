@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Product } from '@/hooks/useProducts';
+import { useMagneticTilt } from '@/hooks/useMagneticTilt';
 import { Play, Plus, ChevronDown, Flame, TrendingUp } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { getProductImage } from '@/data/productImages';
@@ -22,6 +23,7 @@ function getBadge(product: Product): { text: string; color: string; icon?: 'flam
 export function ProductCard({ product, onClick, index = 0, rank }: ProductCardProps) {
   const { data: profile } = useProfile();
   const [isHovered, setIsHovered] = useState(false);
+  const tilt = useMagneticTilt({ maxTilt: 6, scale: 1.0 });
   
   const badge = getBadge(product);
   const productImage = getProductImage(product.image);
@@ -58,20 +60,23 @@ export function ProductCard({ product, onClick, index = 0, rank }: ProductCardPr
           </div>
         )}
       <div
+        ref={tilt.ref}
         className="relative rounded-md overflow-hidden bg-card cursor-pointer transition-all duration-300 ease-out flex-1"
         style={{
-          transform: isHovered ? 'scale(1.3)' : 'scale(1)',
+          ...(!isHovered ? tilt.style : {}),
+          transform: isHovered ? 'perspective(600px) scale(1.3)' : undefined,
           zIndex: isHovered ? 50 : 1,
           boxShadow: isHovered ? '0 16px 48px hsl(0 0% 0% / 0.7)' : 'none',
-          transitionDelay: isHovered ? '0ms' : '0ms',
         }}
+        onMouseMove={!isHovered ? tilt.onMouseMove : undefined}
         onMouseEnter={() => {
           const timer = setTimeout(() => setIsHovered(true), 300);
           (window as any).__hoverTimer = timer;
         }}
-        onMouseLeave={() => {
+        onMouseLeave={(e) => {
           clearTimeout((window as any).__hoverTimer);
           setIsHovered(false);
+          tilt.onMouseLeave();
         }}
         onClick={onClick}
       >

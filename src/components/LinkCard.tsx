@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link, useIncrementLinkClick } from '@/hooks/useLinks';
+import { useMagneticTilt } from '@/hooks/useMagneticTilt';
 import { ExternalLink, Palette, BookOpen, Globe, Instagram, MessageCircle, Youtube, Twitter, Linkedin, Github, Music, Mail, Phone, Link2, FileText, Video, Camera, Mic, Headphones, Zap, Star, Heart, Award, Target, Rocket, Coffee, Code, Database, Cloud, Lock, Settings, Users, ShoppingBag, CreditCard, Gift, Calendar, Clock, Bell, Bookmark, Download, Upload, Share2, Send, MessageSquare, Search, Filter, Layout, Grid, List, Menu, MoreHorizontal, Play } from 'lucide-react';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -32,6 +33,8 @@ export function LinkCard({ link, index = 0 }: LinkCardProps) {
     incrementClick.mutate(link.id);
   };
 
+  const tilt = useMagneticTilt({ maxTilt: 12, scale: 1.05 });
+
   return (
     <motion.a
       href={link.url}
@@ -42,10 +45,14 @@ export function LinkCard({ link, index = 0 }: LinkCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.98 }}
     >
-      <div className={`h-24 rounded-2xl overflow-hidden bg-gradient-to-br ${gradient} relative shadow-lg group-hover:shadow-xl transition-all duration-300`}>
+      <div
+        ref={tilt.ref}
+        style={tilt.style}
+        onMouseMove={tilt.onMouseMove}
+        onMouseLeave={tilt.onMouseLeave}
+        className={`h-24 rounded-2xl overflow-hidden bg-gradient-to-br ${gradient} relative shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
+      >
         {/* Pattern overlay */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
