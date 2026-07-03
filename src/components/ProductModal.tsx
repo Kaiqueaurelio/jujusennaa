@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  MessageCircle, ShoppingCart, Ticket, Check, X, Loader2, Sparkles, 
+import {
+  MessageCircle, ShoppingCart, Ticket, Check, X, Loader2, Sparkles,
   ArrowRight, Zap, ShieldCheck, Clock, Infinity as InfinityIcon, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,19 +22,6 @@ interface ProductModalProps {
   onClose: () => void;
 }
 
-const generateWhatsAppLink = (product: Product, whatsapp: string, coupon?: Coupon, finalPrice?: number): string => {
-  let message = `Olá! Quero comprar o produto *${product.name}*\n`;
-  if (coupon && finalPrice) {
-    message += `💰 Valor: R$ ${finalPrice.toFixed(2).replace('.', ',')}`;
-    message += ` (cupom ${coupon.code} aplicado)\n`;
-  } else {
-    message += `💰 Valor: R$ ${product.price.toFixed(2).replace('.', ',')}\n`;
-  }
-  message += `🆔 Código: ${product.id}\n`;
-  message += `📲 Origem: Link na Bio\n\n`;
-  message += `Pode me informar as formas de pagamento?`;
-  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`;
-};
 
 function parseBenefits(fullDescription: string): string[] {
   return fullDescription
@@ -126,13 +113,6 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
     setCouponCode('');
   };
 
-  const handleWhatsAppClick = () => {
-    if (profile) {
-      trackClick.mutate({ productId: product.id, converted: true });
-      const link = generateWhatsAppLink(product, profile.whatsapp, appliedCoupon || undefined, appliedCoupon ? finalPrice : undefined);
-      window.open(link, '_blank');
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Product } from '@/hooks/useProducts';
 import { useMagneticTilt } from '@/hooks/useMagneticTilt';
 import { Play, Plus, ChevronDown, Flame, TrendingUp } from 'lucide-react';
@@ -23,7 +23,15 @@ function getBadge(product: Product): { text: string; color: string; icon?: 'flam
 export function ProductCard({ product, onClick, index = 0, rank }: ProductCardProps) {
   const { data: profile } = useProfile();
   const [isHovered, setIsHovered] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tilt = useMagneticTilt({ maxTilt: 6, scale: 1.0 });
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+  
   
   const badge = getBadge(product);
   const productImage = getProductImage(product.image);
@@ -70,11 +78,14 @@ export function ProductCard({ product, onClick, index = 0, rank }: ProductCardPr
         }}
         onMouseMove={!isHovered ? tilt.onMouseMove : undefined}
         onMouseEnter={() => {
-          const timer = setTimeout(() => setIsHovered(true), 300);
-          (window as any).__hoverTimer = timer;
+          if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+          hoverTimerRef.current = setTimeout(() => setIsHovered(true), 300);
         }}
-        onMouseLeave={(e) => {
-          clearTimeout((window as any).__hoverTimer);
+        onMouseLeave={() => {
+          if (hoverTimerRef.current) {
+            clearTimeout(hoverTimerRef.current);
+            hoverTimerRef.current = null;
+          }
           setIsHovered(false);
           tilt.onMouseLeave();
         }}
