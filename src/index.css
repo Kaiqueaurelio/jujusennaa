@@ -232,4 +232,49 @@
                   0 0 75px rgba(139, 92, 246, 0.2);
     }
   }
+
+  /* Tech glitch text — used on brand logo */
+  .glitch-text {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch-text::before,
+  .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.75;
+  }
+  .glitch-text::before {
+    color: hsl(190 100% 55%);
+    animation: glitchShift 3.6s infinite steps(1);
+    mix-blend-mode: screen;
+  }
+  .glitch-text::after {
+    color: hsl(320 100% 60%);
+    animation: glitchShift 4.2s infinite reverse steps(1);
+    mix-blend-mode: screen;
+  }
+  @keyframes glitchShift {
+    0%, 92%, 100% { transform: translate(0,0); clip-path: inset(0 0 0 0); }
+    93% { transform: translate(-1.5px, 0.5px); clip-path: inset(10% 0 60% 0); }
+    95% { transform: translate(1.5px, -0.5px); clip-path: inset(55% 0 20% 0); }
+    97% { transform: translate(-1px, 1px); clip-path: inset(30% 0 40% 0); }
+  }
+
+  /* Scan-line sweep for card hover borders */
+  @keyframes scanSweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .card-scan-glow {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.5),
+      0 0 24px hsl(var(--primary) / 0.35),
+      0 16px 48px hsl(0 0% 0% / 0.7) !important;
+  }
 }

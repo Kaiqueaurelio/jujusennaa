@@ -10,6 +10,8 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
 import { SearchOverlay } from '@/components/SearchOverlay';
 import { Footer } from '@/components/Footer';
+import { TechBackground } from '@/components/TechBackground';
+import { CursorTrail } from '@/components/CursorTrail';
 import { Search, Menu, Sun, Moon, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
@@ -37,7 +39,9 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden relative">
+      <TechBackground />
+      <CursorTrail />
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       <SearchOverlay open={isSearchOpen} onOpenChange={setIsSearchOpen} />
 
@@ -63,7 +67,7 @@ const Index = () => {
             <button onClick={() => setIsMenuOpen(true)} className="p-1 sm:hidden">
               <Menu className="w-6 h-6 text-foreground" />
             </button>
-            <h1 className="text-2xl font-bold text-primary tracking-tight">DECODE</h1>
+            <h1 className="text-2xl font-bold text-primary tracking-tight glitch-text" data-text="DECODE">DECODE</h1>
             {/* Inline nav - desktop */}
             <nav className="hidden sm:flex items-center gap-4 ml-4">
               <a href="#" className="text-sm text-foreground hover:text-muted-foreground transition-colors">Início</a>
@@ -94,7 +98,7 @@ const Index = () => {
       </motion.header>
 
       {/* Main content */}
-      <div className="pb-24">
+      <div className="pb-24 relative z-10">
         {/* Hero Billboard - replaces HeaderProfile */}
         <HeroBillboard />
 
