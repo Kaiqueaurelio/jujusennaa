@@ -39,7 +39,9 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden relative">
+      <TechBackground />
+      <CursorTrail />
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       <SearchOverlay open={isSearchOpen} onOpenChange={setIsSearchOpen} />
 
