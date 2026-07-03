@@ -21,7 +21,7 @@ const itemVariants = {
   }
 };
 
-const CATEGORY_ORDER = ['Informática', 'Mídias Sociais', 'Edição', 'Templates Notion', 'Acadêmicos'];
+const CATEGORY_ORDER = ['Informática', 'Mídias Sociais', 'Edição', 'Templates Notion', 'Acadêmicos', 'Gráfica & Impressos'];
 
 function CarouselRow({ products, keyPrefix, onSelect }: {
   products: Product[];
