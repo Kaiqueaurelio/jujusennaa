@@ -69,12 +69,11 @@ export function ProductCard({ product, onClick, index = 0, rank }: ProductCardPr
         )}
       <div
         ref={tilt.ref}
-        className="relative rounded-md overflow-hidden bg-card cursor-pointer transition-all duration-300 ease-out flex-1"
+        className={`relative rounded-md overflow-hidden bg-card cursor-pointer transition-all duration-300 ease-out flex-1 ${isHovered ? 'card-scan-glow' : ''}`}
         style={{
           ...(!isHovered ? tilt.style : {}),
           transform: isHovered ? 'perspective(600px) scale(1.3)' : undefined,
           zIndex: isHovered ? 50 : 1,
-          boxShadow: isHovered ? '0 16px 48px hsl(0 0% 0% / 0.7)' : 'none',
         }}
         onMouseMove={!isHovered ? tilt.onMouseMove : undefined}
         onMouseEnter={() => {
