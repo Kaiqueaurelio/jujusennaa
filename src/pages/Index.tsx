@@ -98,7 +98,7 @@ const Index = () => {
       </motion.header>
 
       {/* Main content */}
-      <div className="pb-24">
+      <div className="pb-24 relative z-10">
         {/* Hero Billboard - replaces HeaderProfile */}
         <HeroBillboard />
 
