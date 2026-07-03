@@ -113,13 +113,6 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
     setCouponCode('');
   };
 
-  const handleWhatsAppClick = () => {
-    if (profile) {
-      trackClick.mutate({ productId: product.id, converted: true });
-      const link = generateWhatsAppLink(product, profile.whatsapp, appliedCoupon || undefined, appliedCoupon ? finalPrice : undefined);
-      window.open(link, '_blank');
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
