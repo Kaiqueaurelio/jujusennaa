@@ -10,6 +10,8 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
 import { SearchOverlay } from '@/components/SearchOverlay';
 import { Footer } from '@/components/Footer';
+import { TechBackground } from '@/components/TechBackground';
+import { CursorTrail } from '@/components/CursorTrail';
 import { Search, Menu, Sun, Moon, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
