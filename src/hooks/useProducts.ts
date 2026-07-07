@@ -22,7 +22,7 @@ const mapDbToProduct = (row: any): Product => ({
   name: row.name,
   description: row.description,
   fullDescription: row.full_description,
-  price: Number(row.price),
+  price: row.price != null ? Number(row.price) : null,
   originalPrice: row.original_price ? Number(row.original_price) : null,
   image: row.image_url,
   category: row.category,
