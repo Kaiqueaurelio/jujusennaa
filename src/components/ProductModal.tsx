@@ -87,19 +87,21 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   if (!product) return null;
 
   const productImage = getProductImage(product.image);
-  const discount = product.originalPrice 
-    ? Math.round((1 - product.price / product.originalPrice) * 100)
+  const isQuoteOnly = product.price == null;
+  const basePrice = product.price ?? 0;
+  const discount = !isQuoteOnly && product.originalPrice
+    ? Math.round((1 - basePrice / product.originalPrice) * 100)
     : 0;
 
-  const couponDiscount = appliedCoupon ? calculateDiscount(appliedCoupon, product.price) : 0;
-  const finalPrice = product.price - couponDiscount;
+  const couponDiscount = !isQuoteOnly && appliedCoupon ? calculateDiscount(appliedCoupon, basePrice) : 0;
+  const finalPrice = basePrice - couponDiscount;
   const benefits = parseBenefits(product.fullDescription);
-  const installments = finalPrice > 30 ? Math.min(Math.floor(finalPrice / 10), 12) : 0;
+  const installments = !isQuoteOnly && finalPrice > 30 ? Math.min(Math.floor(finalPrice / 10), 12) : 0;
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     try {
-      const coupon = await validateCoupon.mutateAsync({ code: couponCode, purchaseAmount: product.price });
+      const coupon = await validateCoupon.mutateAsync({ code: couponCode, purchaseAmount: basePrice });
       setAppliedCoupon(coupon);
       toast.success('Cupom aplicado com sucesso!');
     } catch (error: any) {
@@ -272,40 +274,48 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               </AnimatePresence>
             </motion.div>
 
-            {/* Price */}
-            <motion.div 
-              className="space-y-1 pt-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <div className="flex items-baseline gap-3">
-                <motion.span 
-                  className="text-4xl font-bold text-primary"
-                  key={finalPrice}
-                  initial={{ scale: 1.2 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  R$ {finalPrice.toFixed(2).replace('.', ',')}
-                </motion.span>
-                {(product.originalPrice || appliedCoupon) && (
-                  <motion.span className="text-lg text-muted-foreground line-through" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    R$ {(product.originalPrice || product.price).toFixed(2).replace('.', ',')}
-                  </motion.span>
-                )}
+          {/* Price */}
+          <motion.div 
+            className="space-y-1 pt-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            {isQuoteOnly ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-3xl font-bold text-primary uppercase tracking-wide">Sob consulta</span>
+                <p className="text-sm text-muted-foreground">Solicite um orçamento personalizado via WhatsApp.</p>
               </div>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-3">
+                  <motion.span 
+                    className="text-4xl font-bold text-primary"
+                    key={finalPrice}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    R$ {finalPrice.toFixed(2).replace('.', ',')}
+                  </motion.span>
+                  {(product.originalPrice || appliedCoupon) && (
+                    <motion.span className="text-lg text-muted-foreground line-through" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      R$ {(product.originalPrice || basePrice).toFixed(2).replace('.', ',')}
+                    </motion.span>
+                  )}
+                </div>
 
-              {/* Installments */}
-              {installments > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  ou <span className="font-semibold text-foreground">{installments}x</span> de{' '}
-                  <span className="font-semibold text-foreground">
-                    R$ {(finalPrice / installments).toFixed(2).replace('.', ',')}
-                  </span>
-                </p>
-              )}
-            </motion.div>
+                {installments > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    ou <span className="font-semibold text-foreground">{installments}x</span> de{' '}
+                    <span className="font-semibold text-foreground">
+                      R$ {(finalPrice / installments).toFixed(2).replace('.', ',')}
+                    </span>
+                  </p>
+                )}
+              </>
+            )}
+          </motion.div>
 
             {/* Guarantee */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
@@ -331,7 +341,13 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   <Button 
                     onClick={() => {
                       if (profile) trackClick.mutate({ productId: product.id, converted: true });
-                      setShowCheckout(true);
+                      if (isQuoteOnly) {
+                        const whatsapp = profile?.whatsapp || '5511939222885';
+                        const msg = encodeURIComponent(`Olá! Gostaria de um orçamento para: ${product.name}`);
+                        window.open(`https://wa.me/${whatsapp}?text=${msg}`, '_blank');
+                      } else {
+                        setShowCheckout(true);
+                      }
                     }}
                     className="w-full btn-primary-glow py-6 text-lg font-semibold gap-3 relative overflow-hidden group bg-emerald-500 hover:bg-emerald-600" 
                     size="lg"
@@ -341,7 +357,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)' }}
                     />
                     <MessageCircle className="w-6 h-6" />
-                    Garantir o meu agora
+                    {isQuoteOnly ? 'Solicitar orçamento' : 'Garantir o meu agora'}
                     <motion.div animate={{ x: [0, 5, 0] }} transition={{ duration: 1, repeat: Infinity }}>
                       <ArrowRight className="w-5 h-5" />
                     </motion.div>

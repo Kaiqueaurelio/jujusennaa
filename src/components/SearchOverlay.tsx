@@ -74,7 +74,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                     <span className="text-xs text-muted-foreground">{product.category}</span>
                   </div>
                   <span className="text-xs font-semibold text-primary">
-                    R$ {product.price.toFixed(2)}
+                    {product.price != null ? `R$ ${product.price.toFixed(2)}` : 'Sob consulta'}
                   </span>
                 </CommandItem>
               ))}

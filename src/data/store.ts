@@ -169,9 +169,12 @@ export const initialLinks: Link[] = [
 
 // WhatsApp message generator
 export const generateWhatsAppLink = (product: Product, whatsapp: string): string => {
+  const priceLine = product.price != null
+    ? `💰 Valor: R$ ${product.price.toFixed(2).replace('.', ',')}\n`
+    : `💬 Solicitar orçamento\n`;
   const message = encodeURIComponent(
     `Olá! Quero comprar o produto *${product.name}*\n` +
-    `💰 Valor: R$ ${product.price.toFixed(2).replace('.', ',')}\n` +
+    priceLine +
     `🆔 Código: ${product.id}\n` +
     `📲 Origem: Link na Bio\n\n` +
     `Pode me informar as formas de pagamento?`
