@@ -375,7 +375,7 @@ export default function Admin() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <p className="text-xs text-primary font-semibold">
-                                    R$ {product.price.toFixed(2).replace('.', ',')}
+                                    {product.price != null ? `R$ ${product.price.toFixed(2).replace('.', ',')}` : 'Sob consulta'}
                                   </p>
                                   {product.originalPrice && (
                                     <p className="text-[10px] text-muted-foreground line-through">
