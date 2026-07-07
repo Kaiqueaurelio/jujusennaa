@@ -5,6 +5,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function sanitize(str: string, maxLen: number): string {
+  return str.replace(/[^\p{L}\p{N}\s\-.,!?()]/gu, '').trim().slice(0, maxLen);
+}
+
 function sceneForProduct(name: string, category: string): string {
   const n = name.toLowerCase();
   const c = category.toLowerCase();
