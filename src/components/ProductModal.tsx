@@ -274,40 +274,48 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               </AnimatePresence>
             </motion.div>
 
-            {/* Price */}
-            <motion.div 
-              className="space-y-1 pt-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <div className="flex items-baseline gap-3">
-                <motion.span 
-                  className="text-4xl font-bold text-primary"
-                  key={finalPrice}
-                  initial={{ scale: 1.2 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  R$ {finalPrice.toFixed(2).replace('.', ',')}
-                </motion.span>
-                {(product.originalPrice || appliedCoupon) && (
-                  <motion.span className="text-lg text-muted-foreground line-through" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    R$ {(product.originalPrice || product.price).toFixed(2).replace('.', ',')}
-                  </motion.span>
-                )}
+          {/* Price */}
+          <motion.div 
+            className="space-y-1 pt-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            {isQuoteOnly ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-3xl font-bold text-primary uppercase tracking-wide">Sob consulta</span>
+                <p className="text-sm text-muted-foreground">Solicite um orçamento personalizado via WhatsApp.</p>
               </div>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-3">
+                  <motion.span 
+                    className="text-4xl font-bold text-primary"
+                    key={finalPrice}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    R$ {finalPrice.toFixed(2).replace('.', ',')}
+                  </motion.span>
+                  {(product.originalPrice || appliedCoupon) && (
+                    <motion.span className="text-lg text-muted-foreground line-through" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      R$ {(product.originalPrice || basePrice).toFixed(2).replace('.', ',')}
+                    </motion.span>
+                  )}
+                </div>
 
-              {/* Installments */}
-              {installments > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  ou <span className="font-semibold text-foreground">{installments}x</span> de{' '}
-                  <span className="font-semibold text-foreground">
-                    R$ {(finalPrice / installments).toFixed(2).replace('.', ',')}
-                  </span>
-                </p>
-              )}
-            </motion.div>
+                {installments > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    ou <span className="font-semibold text-foreground">{installments}x</span> de{' '}
+                    <span className="font-semibold text-foreground">
+                      R$ {(finalPrice / installments).toFixed(2).replace('.', ',')}
+                    </span>
+                  </p>
+                )}
+              </>
+            )}
+          </motion.div>
 
             {/* Guarantee */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
