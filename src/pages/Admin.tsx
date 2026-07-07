@@ -105,7 +105,7 @@ export default function Admin() {
       onSuccess: () => {
         sendPush.mutate({
           title: '🚀 Novo Produto Disponível!',
-          body: `${product.name} - R$ ${product.price.toFixed(2).replace('.', ',')}`,
+          body: `${product.name}${product.price != null ? ` - R$ ${product.price.toFixed(2).replace('.', ',')}` : ' - Sob consulta'}`,
           url: '/'
         });
       }
