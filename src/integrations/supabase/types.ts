@@ -178,7 +178,7 @@ export type Database = {
           image_url: string | null
           name: string
           original_price: number | null
-          price: number
+          price: number | null
           sort_order: number
           tags: string[]
           updated_at: string
@@ -194,7 +194,7 @@ export type Database = {
           image_url?: string | null
           name: string
           original_price?: number | null
-          price: number
+          price?: number | null
           sort_order?: number
           tags?: string[]
           updated_at?: string
@@ -210,7 +210,7 @@ export type Database = {
           image_url?: string | null
           name?: string
           original_price?: number | null
-          price?: number
+          price?: number | null
           sort_order?: number
           tags?: string[]
           updated_at?: string
