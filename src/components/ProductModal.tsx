@@ -101,7 +101,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     try {
-      const coupon = await validateCoupon.mutateAsync({ code: couponCode, purchaseAmount: product.price });
+      const coupon = await validateCoupon.mutateAsync({ code: couponCode, purchaseAmount: basePrice });
       setAppliedCoupon(coupon);
       toast.success('Cupom aplicado com sucesso!');
     } catch (error: any) {
