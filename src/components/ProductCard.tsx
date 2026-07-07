@@ -36,15 +36,18 @@ export function ProductCard({ product, onClick, index = 0, rank }: ProductCardPr
   const badge = getBadge(product);
   const productImage = getProductImage(product.image);
 
-  const discount = product.originalPrice && product.originalPrice > product.price
+  const discount = product.price != null && product.originalPrice && product.originalPrice > product.price
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     const whatsapp = profile?.whatsapp || '5511939222885';
+    const priceLine = product.price != null
+      ? `\nPreço: R$ ${product.price.toFixed(2).replace('.', ',')}`
+      : '\nGostaria de um orçamento.';
     const message = encodeURIComponent(
-      `Olá! Tenho interesse no produto: ${product.name}\nPreço: R$ ${product.price.toFixed(2).replace('.', ',')}`
+      `Olá! Tenho interesse no produto: ${product.name}${priceLine}`
     );
     window.open(`https://wa.me/${whatsapp}?text=${message}`, '_blank');
   };
