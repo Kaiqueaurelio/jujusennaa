@@ -87,14 +87,16 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   if (!product) return null;
 
   const productImage = getProductImage(product.image);
-  const discount = product.originalPrice 
-    ? Math.round((1 - product.price / product.originalPrice) * 100)
+  const isQuoteOnly = product.price == null;
+  const basePrice = product.price ?? 0;
+  const discount = !isQuoteOnly && product.originalPrice
+    ? Math.round((1 - basePrice / product.originalPrice) * 100)
     : 0;
 
-  const couponDiscount = appliedCoupon ? calculateDiscount(appliedCoupon, product.price) : 0;
-  const finalPrice = product.price - couponDiscount;
+  const couponDiscount = !isQuoteOnly && appliedCoupon ? calculateDiscount(appliedCoupon, basePrice) : 0;
+  const finalPrice = basePrice - couponDiscount;
   const benefits = parseBenefits(product.fullDescription);
-  const installments = finalPrice > 30 ? Math.min(Math.floor(finalPrice / 10), 12) : 0;
+  const installments = !isQuoteOnly && finalPrice > 30 ? Math.min(Math.floor(finalPrice / 10), 12) : 0;
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
