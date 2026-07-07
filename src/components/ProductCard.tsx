@@ -172,13 +172,19 @@ export function ProductCard({ product, onClick, index = 0, rank }: ProductCardPr
             {/* Title + Price */}
             <h3 className="text-sm font-bold text-foreground truncate">{product.name}</h3>
             <div className="flex items-center gap-2">
-              <span className="text-primary font-bold text-sm">
-                R$ {product.price.toFixed(2).replace('.', ',')}
-              </span>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-muted-foreground text-xs line-through">
-                  R$ {product.originalPrice.toFixed(2).replace('.', ',')}
-                </span>
+              {product.price != null ? (
+                <>
+                  <span className="text-primary font-bold text-sm">
+                    R$ {product.price.toFixed(2).replace('.', ',')}
+                  </span>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <span className="text-muted-foreground text-xs line-through">
+                      R$ {product.originalPrice.toFixed(2).replace('.', ',')}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="text-primary font-bold text-sm uppercase tracking-wide">Sob consulta</span>
               )}
             </div>
 
