@@ -341,7 +341,13 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   <Button 
                     onClick={() => {
                       if (profile) trackClick.mutate({ productId: product.id, converted: true });
-                      setShowCheckout(true);
+                      if (isQuoteOnly) {
+                        const whatsapp = profile?.whatsapp || '5511939222885';
+                        const msg = encodeURIComponent(`Olá! Gostaria de um orçamento para: ${product.name}`);
+                        window.open(`https://wa.me/${whatsapp}?text=${msg}`, '_blank');
+                      } else {
+                        setShowCheckout(true);
+                      }
                     }}
                     className="w-full btn-primary-glow py-6 text-lg font-semibold gap-3 relative overflow-hidden group bg-emerald-500 hover:bg-emerald-600" 
                     size="lg"
@@ -351,7 +357,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)' }}
                     />
                     <MessageCircle className="w-6 h-6" />
-                    Garantir o meu agora
+                    {isQuoteOnly ? 'Solicitar orçamento' : 'Garantir o meu agora'}
                     <motion.div animate={{ x: [0, 5, 0] }} transition={{ duration: 1, repeat: Infinity }}>
                       <ArrowRight className="w-5 h-5" />
                     </motion.div>
