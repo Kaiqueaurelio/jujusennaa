@@ -3,10 +3,6 @@ import { useLinks } from '@/hooks/useLinks';
 import { LinkCard } from './LinkCard';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import video1 from '@/assets/juju-video-1.mp4.asset.json';
-import video2 from '@/assets/juju-video-2.mp4.asset.json';
-
-const quickVideos = [video1.url, video2.url];
 
 export function LinksSection() {
   const { data: links, isLoading } = useLinks();
@@ -26,11 +22,6 @@ export function LinksSection() {
         <div className="flex gap-3 overflow-hidden">
           {[1, 2, 3].map((i) => (
             <div key={i} className="w-[160px] h-24 bg-secondary rounded-2xl animate-pulse flex-shrink-0" />
-          ))}
-          {quickVideos.map((src) => (
-            <div key={src} className="relative flex-shrink-0 w-[45vw] max-w-[240px] min-h-[120px] rounded-2xl overflow-hidden bg-secondary">
-              <video src={src} autoPlay muted loop playsInline preload="metadata" className="absolute inset-0 w-full h-full object-cover" />
-            </div>
           ))}
         </div>
       </div>
