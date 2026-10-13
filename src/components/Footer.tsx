@@ -11,7 +11,7 @@ export function Footer() {
   const externalLinks = [
     { label: 'WhatsApp', href: whatsappUrl },
     { label: 'Instagram', href: 'https://instagram.com/juju.sennaa' },
-    { label: 'Email', href: 'mailto:decoanalytics@outlook.com.br' },
+    { label: 'Email', href: 'mailto:juju.senna@admin.br' },
   ];
 
   const siteLinks = [

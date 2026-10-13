@@ -41,14 +41,14 @@ export default function Contato() {
 
         <div className="grid sm:grid-cols-3 gap-4 mb-10">
           <a
-            href="mailto:decoanalytics@outlook.com.br"
+            href="mailto:juju.senna@admin.br"
             className="flex flex-col items-center gap-3 p-6 rounded-xl bg-card border border-border/30 hover:border-primary/40 transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <Mail className="w-5 h-5 text-primary" />
             </div>
             <span className="text-sm font-medium text-foreground">E-mail</span>
-            <span className="text-xs text-muted-foreground">decoanalytics@outlook.com.br</span>
+            <span className="text-xs text-muted-foreground">juju.senna@admin.br</span>
           </a>
 
           <a
