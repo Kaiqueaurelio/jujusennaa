@@ -116,6 +116,36 @@ export const initialProducts: Product[] = [
 
 export const initialLinks: Link[] = [
   {
+    id: "donations-do-bem",
+    title: "Doações do Bem 💕",
+    url: "https://go.linkdobem.com/?id=8v2gd1_ig",
+    icon: "Heart",
+    category: "content",
+    clicks: 0,
+    order: 1,
+    active: true,
+  },
+  {
+    id: "comprar-produtos",
+    title: "Compre seus produtos aqui 🧡",
+    url: "https://pay.goold.club/aff/S3LYWN/WQHJRASU",
+    icon: "ShoppingBag",
+    category: "store",
+    clicks: 0,
+    order: 2,
+    active: true,
+  },
+  {
+    id: "loja-belletonn",
+    title: "Loja BELLETONN 🩵",
+    url: "https://linktr.ee/belletonn_oficial?utm_source=linktree_profile_share&ltsid=f7806fd9-dd22-44a0-bfca-dbba044439b6",
+    icon: "ShoppingBag",
+    category: "store",
+    clicks: 0,
+    order: 3,
+    active: true,
+  },
+  {
     id: "1",
     title: "Portfólio Behance",
     url: "https://www.behance.net/decodeanalytics",
