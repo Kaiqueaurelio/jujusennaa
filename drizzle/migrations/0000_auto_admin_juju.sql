@@ -1,15 +1,5 @@
-CREATE OR REPLACE FUNCTION public.grant_admin_to_owner()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-BEGIN
-  IF lower(NEW.email) = 'juju.senna@admin.br' THEN
-    INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'admin')
-    ON CONFLICT DO NOTHING;
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
+-- Intentionally does not grant administrator permissions based on an email address.
+-- Provision the first administrator explicitly through a trusted Supabase SQL session
+-- after verifying the user ID. Never hard-code admin identity in a signup trigger.
 DROP TRIGGER IF EXISTS on_auth_user_created_grant_admin ON auth.users;
-CREATE TRIGGER on_auth_user_created_grant_admin
-AFTER INSERT ON auth.users
-FOR EACH ROW EXECUTE FUNCTION public.grant_admin_to_owner();
+DROP FUNCTION IF EXISTS public.grant_admin_to_owner();
