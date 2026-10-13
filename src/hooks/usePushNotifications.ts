@@ -42,8 +42,9 @@ export function usePushNotifications() {
         return false;
       }
 
+      const { data: { session } } = await supabase.auth.getSession();
       const registration = await navigator.serviceWorker.ready;
-      
+
       const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: VAPID_PUBLIC_KEY
@@ -51,7 +52,8 @@ export function usePushNotifications() {
 
       // Save subscription to database
       const { error } = await supabase.functions.invoke('push-subscribe', {
-        body: { subscription: subscription.toJSON() }
+        body: { subscription: subscription.toJSON() },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
 
       if (error) throw error;
@@ -68,6 +70,7 @@ export function usePushNotifications() {
 
   const unsubscribe = useCallback(async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const registration = await navigator.serviceWorker.ready;
       const subscription = await (registration as any).pushManager.getSubscription();
       
@@ -76,7 +79,8 @@ export function usePushNotifications() {
         
         // Remove from database
         await supabase.functions.invoke('push-unsubscribe', {
-          body: { endpoint: subscription.endpoint }
+          body: { endpoint: subscription.endpoint },
+          headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
         });
       }
 
