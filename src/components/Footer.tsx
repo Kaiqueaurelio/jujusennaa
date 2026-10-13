@@ -1,17 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useProfile } from '@/hooks/useProfile';
 
 export function Footer() {
-  const { data: profile } = useProfile();
-
-  const whatsappUrl = profile?.whatsapp
-    ? `https://wa.me/${profile.whatsapp}`
-    : '#';
-
   const externalLinks = [
-    { label: 'WhatsApp', href: whatsappUrl },
     { label: 'Instagram', href: 'https://instagram.com/juju.sennaa' },
-    { label: 'Email', href: 'mailto:juju.senna@admin.br' },
   ];
 
   const siteLinks = [
