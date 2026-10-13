@@ -8,6 +8,13 @@
       "when": 1791927623216,
       "tag": "0000_auto_admin_juju",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791927718370,
+      "tag": "0001_juju_avatar_clear_ads",
+      "breakpoints": true
     }
   ]
 }
