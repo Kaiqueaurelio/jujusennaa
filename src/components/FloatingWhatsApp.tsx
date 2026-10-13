@@ -4,7 +4,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { MessageCircle, X } from 'lucide-react';
 
 export function FloatingWhatsApp() {
-  const { data: profile } = useProfile();
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
@@ -13,12 +12,8 @@ export function FloatingWhatsApp() {
     return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
   }, []);
 
-  if (!profile?.whatsapp) return null;
-
-  const handleClick = () => {
-    const message = encodeURIComponent('Olá! Vim pelo Link na Bio e gostaria de saber mais sobre os produtos.');
-    window.open(`https://wa.me/${profile.whatsapp}?text=${message}`, '_blank');
-  };
+  // WhatsApp is temporarily disabled until the contact number is configured.
+  return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-end gap-2">
