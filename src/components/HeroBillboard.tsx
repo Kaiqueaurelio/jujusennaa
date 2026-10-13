@@ -9,17 +9,11 @@ import { ProductModal } from './ProductModal';
 import { Product } from '@/hooks/useProducts';
 
 export function HeroBillboard() {
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: profile } = useProfile();
   const { data: products } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const featuredProduct = products?.find(p => p.featured && p.active);
-
-  if (profileLoading || !profile) {
-    return (
-      <div className="relative w-full h-[40vh] sm:h-[60vh] bg-secondary animate-pulse" />
-    );
-  }
 
   return (
     <>
@@ -61,7 +55,7 @@ export function HeroBillboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {profile.name}
+            {profile?.name || 'JUJU SENNA'}
           </motion.h1>
 
           <motion.p
@@ -70,7 +64,7 @@ export function HeroBillboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {featuredProduct?.description || profile.bio}
+            {featuredProduct?.description || profile?.bio}
           </motion.p>
 
           <motion.div
