@@ -66,7 +66,7 @@ export default function EllaChat() {
     {
       role: 'assistant',
       content:
-        'Olá! 👋 Eu sou a **Ella Ribeiro**, sua assistente virtual. Posso te ajudar a gerenciar produtos, links e anúncios. Você também pode enviar fotos e vídeos! O que você precisa?',
+        'Olá! 👋 Eu sou a **Juju**, assistente virtual do painel. Posso ajudar com produtos, links, anúncios e informações públicas documentadas do perfil @juju.sennaa. O que você precisa?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -102,7 +102,7 @@ export default function EllaChat() {
     for (const key of invalidateKeys) {
       queryClient.invalidateQueries({ queryKey: [key] });
     }
-    toast.success('Ação executada pela Ella!');
+    toast.success('Ação executada pela Juju!');
   }, [queryClient]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -327,7 +327,7 @@ export default function EllaChat() {
         }
         return updated;
       });
-      toast.error('Erro ao comunicar com a Ella');
+      toast.error('Erro ao comunicar com a Juju');
     } finally {
       setIsLoading(false);
       setStatusText('');
@@ -347,12 +347,12 @@ export default function EllaChat() {
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-secondary/30">
         <Avatar className="h-10 w-10 ring-2 ring-primary/30">
-          <AvatarImage src={ellaAvatar} alt="Ella Ribeiro" />
-          <AvatarFallback>ER</AvatarFallback>
+          <AvatarImage src={ellaAvatar} alt="Juju" />
+          <AvatarFallback>J</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-foreground text-sm">Ella Ribeiro</h3>
+            <h3 className="font-semibold text-foreground text-sm">Juju</h3>
             <Sparkles className="w-3.5 h-3.5 text-primary" />
           </div>
           <p className="text-xs text-muted-foreground">Assistente IA • Gerenciamento do app</p>
@@ -376,7 +376,7 @@ export default function EllaChat() {
               >
                 {msg.role === 'assistant' && (
                   <Avatar className="h-7 w-7 flex-shrink-0 mt-0.5">
-                    <AvatarImage src={ellaAvatar} alt="Ella" />
+                    <AvatarImage src={ellaAvatar} alt="Juju" />
                     <AvatarFallback><Bot className="w-3.5 h-3.5" /></AvatarFallback>
                   </Avatar>
                 )}
@@ -502,7 +502,7 @@ export default function EllaChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Digite um comando para a Ella..."
+            placeholder="Digite um comando para a Juju..."
             rows={1}
             className="flex-1 resize-none rounded-xl border border-border/50 bg-background px-3.5 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-colors"
             disabled={isLoading}
