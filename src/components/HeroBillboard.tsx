@@ -1,47 +1,42 @@
 import { motion } from 'framer-motion';
 import { useProfile } from '@/hooks/useProfile';
 import { useProducts } from '@/hooks/useProducts';
-import { getProductImage } from '@/data/productImages';
+import video1 from '@/assets/juju-video-1.webm.asset.json';
+import video2 from '@/assets/juju-video-2.webm.asset.json';
 import { Play, Info } from 'lucide-react';
 import { useState } from 'react';
 import { ProductModal } from './ProductModal';
 import { Product } from '@/hooks/useProducts';
 
 export function HeroBillboard() {
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: profile } = useProfile();
   const { data: products } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const featuredProduct = products?.find(p => p.featured && p.active);
-  const heroImage = featuredProduct ? getProductImage(featuredProduct.image) : null;
-
-  if (profileLoading || !profile) {
-    return (
-      <div className="relative w-full h-[40vh] sm:h-[60vh] bg-secondary animate-pulse" />
-    );
-  }
 
   return (
     <>
       <div className="relative w-full h-[40vh] sm:h-[60vh] overflow-hidden">
-        {/* Background Image */}
-        {heroImage ? (
-          <motion.img
-            src={heroImage}
-            alt={featuredProduct?.name || ''}
-            className="absolute inset-0 w-full h-full object-cover"
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 8, ease: 'easeOut' }}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-card to-background" />
-        )}
+        <div className="absolute inset-0 grid grid-cols-2" aria-label="Vídeos da Juju Senna">
+          {[video1.url, video2.url].map((src, index) => (
+            <video
+              key={src}
+              src={src}
+              aria-label={`Vídeo da Juju Senna ${index + 1}`}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              className="w-full h-full min-h-0 object-cover"
+            />
+          ))}
+        </div>
 
         {/* Gradient overlays + stronger vignette */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
-        <div className="absolute inset-0" style={{ boxShadow: 'inset 0 0 100px 40px hsl(var(--background))' }} />
 
         {/* Category badge - maturity rating style */}
         {featuredProduct && (
@@ -60,7 +55,7 @@ export function HeroBillboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {profile.name}
+            {profile?.name || 'JUJU SENNA'}
           </motion.h1>
 
           <motion.p
@@ -69,7 +64,7 @@ export function HeroBillboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {featuredProduct?.description || profile.bio}
+            {featuredProduct?.description || profile?.bio}
           </motion.p>
 
           <motion.div
