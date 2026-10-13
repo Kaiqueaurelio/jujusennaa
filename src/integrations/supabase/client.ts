@@ -3,14 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { brokeredPreviewStorage } from './previewAuthStorage';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const configuredUrl = import.meta.env.VITE_SUPABASE_URL;
+const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error(
-    'Supabase não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY nas variáveis de ambiente do ambiente de build.',
+// Do not throw at module load: an absent environment variable must not blank
+// the entire React app before its error boundary can render.
+const hasSupabaseConfig = Boolean(configuredUrl && configuredKey);
+if (!hasSupabaseConfig) {
+  console.error(
+    '[Juju] Supabase não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY no ambiente de build. O app pode abrir, mas recursos que dependem do Supabase não funcionarão até configurar essas variáveis.',
   );
 }
+
+const SUPABASE_URL = configuredUrl || 'https://configuration-missing.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'configuration-missing-publishable-key';
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
