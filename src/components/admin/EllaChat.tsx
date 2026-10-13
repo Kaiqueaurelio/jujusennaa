@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import ellaAvatar from '@/assets/ella-avatar.png';
+const jujuAvatar = '/juju-avatar.png';
 
 interface Attachment {
   file: File;
@@ -347,7 +347,7 @@ export default function EllaChat() {
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 bg-secondary/30">
         <Avatar className="h-10 w-10 ring-2 ring-primary/30">
-          <AvatarImage src={ellaAvatar} alt="Juju" />
+          <AvatarImage src={jujuAvatar} alt="Juju" />
           <AvatarFallback>J</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -376,7 +376,7 @@ export default function EllaChat() {
               >
                 {msg.role === 'assistant' && (
                   <Avatar className="h-7 w-7 flex-shrink-0 mt-0.5">
-                    <AvatarImage src={ellaAvatar} alt="Juju" />
+                    <AvatarImage src={jujuAvatar} alt="Juju" />
                     <AvatarFallback><Bot className="w-3.5 h-3.5" /></AvatarFallback>
                   </Avatar>
                 )}
