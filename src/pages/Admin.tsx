@@ -262,7 +262,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="ella" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Ella IA</span>
+              <span>Juju IA</span>
             </TabsTrigger>
           </TabsList>
 
@@ -581,7 +581,7 @@ export default function Admin() {
             </motion.div>
           </TabsContent>
 
-          {/* Ella IA Tab */}
+          {/* Juju IA Tab */}
           <TabsContent value="ella">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
               <EllaChat />
