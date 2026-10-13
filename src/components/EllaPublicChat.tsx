@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import ellaAvatar from '@/assets/ella-avatar.png';
+const jujuAvatar = '/juju-avatar.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -202,7 +202,7 @@ export function EllaPublicChat() {
             aria-label="Falar com Juju"
           >
             <Avatar className="h-11 w-11 ring-2 ring-primary-foreground/30">
-              <AvatarImage src={ellaAvatar} alt="Juju" />
+              <AvatarImage src={jujuAvatar} alt="Juju" />
               <AvatarFallback><Bot className="w-5 h-5" /></AvatarFallback>
             </Avatar>
             <motion.div
@@ -227,7 +227,7 @@ export function EllaPublicChat() {
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-secondary/30">
               <Avatar className="h-9 w-9 ring-2 ring-primary/30">
-                <AvatarImage src={ellaAvatar} alt="Juju" />
+                <AvatarImage src={jujuAvatar} alt="Juju" />
                 <AvatarFallback><Bot className="w-4 h-4" /></AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
@@ -255,7 +255,7 @@ export function EllaPublicChat() {
                   >
                     {msg.role === 'assistant' && (
                       <Avatar className="h-6 w-6 flex-shrink-0 mt-0.5">
-                        <AvatarImage src={ellaAvatar} alt="Juju" />
+                        <AvatarImage src={jujuAvatar} alt="Juju" />
                         <AvatarFallback><Bot className="w-3 h-3" /></AvatarFallback>
                       </Avatar>
                     )}
