@@ -179,12 +179,29 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const payload = await req.json();
+    const messages = payload?.messages;
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30 ||
+        messages.some((m: any) => !m || !["user", "assistant"].includes(m.role) ||
+          typeof m.content !== "string" || m.content.length > 4000)) {
+      return new Response(JSON.stringify({ error: "Mensagens inválidas." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!supabaseUrl || !serviceRoleKey) {
+      return new Response(JSON.stringify({ error: "Configuração do servidor incompleta." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const contextData = await fetchProductContext(supabase);
