@@ -217,14 +217,22 @@ export default function EllaChat() {
         content: m.content,
       }));
 
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.access_token) {
+        throw new Error('Sua sessão expirou. Entre novamente para usar a Ella.');
+      }
+
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('A integração com o Supabase não está configurada.');
+      }
 
       const response = await fetch(`${supabaseUrl}/functions/v1/ella-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`,
+          'Authorization': `Bearer ${session.access_token}`,
           'apikey': supabaseKey,
         },
         body: JSON.stringify({ messages: chatMessages }),
