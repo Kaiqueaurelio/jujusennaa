@@ -69,7 +69,10 @@ const Index = () => {
             <button onClick={() => setIsMenuOpen(true)} className="p-1 sm:hidden">
               <Menu className="w-6 h-6 text-foreground" />
             </button>
-            <h1 className="text-2xl font-bold text-primary tracking-tight glitch-text" data-text="JUJU SENNA">JUJU SENNA</h1>
+            <div className="flex items-center gap-2">
+              <img src={jujuAvatar} alt="Juju Senna" className="w-9 h-9 rounded-full object-cover border border-primary/50" />
+              <h1 className="text-2xl font-bold text-primary tracking-tight glitch-text" data-text="JUJU SENNA">JUJU SENNA</h1>
+            </div>
             {/* Inline nav - desktop */}
             <nav className="hidden sm:flex items-center gap-4 ml-4">
               <a href="#" className="text-sm text-foreground hover:text-muted-foreground transition-colors">Início</a>
