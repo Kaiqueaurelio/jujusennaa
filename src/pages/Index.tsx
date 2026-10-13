@@ -18,6 +18,8 @@ import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 
 import { useTheme } from 'next-themes';
 import { useProfile } from '@/hooks/useProfile';
 
+const jujuAvatar = '/juju-avatar.png';
+
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -85,13 +87,7 @@ const Index = () => {
             </button>
             <NotificationBell />
             <Link to="/admin">
-              {profile?.avatar ? (
-                <img src={profile.avatar} alt="" className="w-8 h-8 rounded object-cover" />
-              ) : (
-                <div className="w-8 h-8 rounded bg-secondary flex items-center justify-center">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                </div>
-              )}
+              <img src={jujuAvatar} alt="Juju" className="w-8 h-8 rounded-full object-cover" />
             </Link>
           </div>
         </div>
