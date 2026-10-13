@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-const jujuAvatar = '/juju-avatar.png';
+const jujuAvatar = '/juju-avatar.png?v=20261013';
 
 interface Message {
   role: 'user' | 'assistant';
