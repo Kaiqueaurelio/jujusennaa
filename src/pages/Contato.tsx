@@ -60,7 +60,7 @@ export default function Contato() {
           </a>
 
           <a
-            href="https://instagram.com"
+            href="https://instagram.com/juju.sennaa?obrf=OXZubXZ3YTY4ZXI%3D"
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-col items-center gap-3 p-6 rounded-xl bg-card border border-border/30 hover:border-pink-500/40 transition-colors"
