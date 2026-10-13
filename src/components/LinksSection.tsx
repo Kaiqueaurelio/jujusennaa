@@ -30,7 +30,7 @@ const fallbackLinks: Link[] = [
   {
     id: 'fallback-belletonn',
     title: 'Loja BELLETONN 🩵',
-    url: 'https://linktr.ee/belletonn_oficial?utm_source=linktree_profile_share&ltsid=f7806fd9-dd22-44a0-bfba-cdbba044439b6',
+    url: 'https://linktr.ee/belletonn_oficial?utm_source=linktree_profile_share&ltsid=f7806fd9-dd22-44a0-bfca-dbba044439b6',
     icon: 'ShoppingBag',
     category: 'store',
     clicks: 0,
