@@ -18,7 +18,7 @@ import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 
 import { useTheme } from 'next-themes';
 import { useProfile } from '@/hooks/useProfile';
 
-const jujuAvatar = '/juju-avatar.png';
+const jujuAvatar = '/juju-avatar.png?v=20261013';
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
