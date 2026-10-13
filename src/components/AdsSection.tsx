@@ -4,9 +4,6 @@ import { Button } from '@/components/ui/button';
 import { useAds } from '@/hooks/useAds';
 import { AdCarouselSkeleton } from '@/components/SkeletonLoaders';
 
-import adZonaFazedor from '@/assets/ad-zona-fazedor.jpeg';
-import adFerramentas from '@/assets/ad-ferramentas.jpeg';
-import adSocialMedia from '@/assets/ad-social-media.jpeg';
 
 interface AdSlide {
   id: string;
@@ -16,11 +13,6 @@ interface AdSlide {
   advertiser: string;
 }
 
-const fallbackAds: AdSlide[] = [
-  { id: 'fallback-1', image: adZonaFazedor, title: 'Zona do Fazedor', link: 'https://pay.kiwify.com.br/HlJSYEV', advertiser: 'Zona do Fazedor' },
-  { id: 'fallback-2', image: adFerramentas, title: 'Ferramentas & Ebooks', link: 'https://pay.kiwify.com.br/HlJSYEV', advertiser: 'Zona do Fazedor' },
-  { id: 'fallback-3', image: adSocialMedia, title: 'Social Media & Photoshop', link: 'https://pay.kiwify.com.br/HlJSYEV', advertiser: 'Zona do Fazedor' }
-];
 
 export function AdsSection() {
   const { data: dbAds, isLoading } = useAds();
@@ -32,11 +24,11 @@ export function AdsSection() {
   const ads: AdSlide[] = useMemo(() => {
     if (dbAds && dbAds.length > 0) {
       return dbAds.filter(ad => ad.active).map(ad => ({
-        id: ad.id, image: ad.image_url || adZonaFazedor,
+        id: ad.id, image: ad.image_url || '',
         title: ad.title, link: ad.link_url, advertiser: ad.advertiser_name
-      }));
+      })).filter(ad => ad.image);
     }
-    return fallbackAds;
+    return [];
   }, [dbAds]);
 
   // Auto-rotate
