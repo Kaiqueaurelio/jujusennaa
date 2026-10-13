@@ -1,6 +1,6 @@
 {
-  "name": "Decode Analytics",
-  "short_name": "Decode",
+  "name": "Juju Senna",
+  "short_name": "Juju",
   "description": "Produtos digitais e conteúdos para impulsionar sua jornada",
   "start_url": "/",
   "display": "standalone",
@@ -9,9 +9,9 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/juju-avatar.png?v=20261013",
       "sizes": "64x64",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
       "src": "/juju-avatar.png?v=20261013",
