@@ -622,7 +622,7 @@ export default function Admin() {
           ) : (
             <motion.div key="avatar" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
               <Avatar className="h-10 w-10">
-                <AvatarImage src={jujuAvatar} alt="Ella" />
+                <AvatarImage src={jujuAvatar} alt="Juju" />
                 <AvatarFallback><Sparkles className="w-5 h-5 text-primary-foreground" /></AvatarFallback>
               </Avatar>
             </motion.div>
