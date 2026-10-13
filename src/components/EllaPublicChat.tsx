@@ -27,7 +27,7 @@ export function EllaPublicChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Olá! 👋 Sou a **Ella**, assistente virtual da Juju Senna. Posso te ajudar a encontrar o produto ideal pra você! O que está buscando?',
+      content: 'Olá! 👋 Sou a **Juju**, assistente virtual do perfil. Posso te ajudar a encontrar o produto ideal pra você! O que está buscando?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -199,10 +199,10 @@ export function EllaPublicChat() {
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             onClick={() => setIsOpen(true)}
             className="fixed bottom-24 right-6 z-50 w-14 h-14 rounded-full shadow-xl flex items-center justify-center bg-primary hover:brightness-110 active:scale-95 transition-all"
-            aria-label="Falar com Ella"
+            aria-label="Falar com Juju"
           >
             <Avatar className="h-11 w-11 ring-2 ring-primary-foreground/30">
-              <AvatarImage src={ellaAvatar} alt="Ella" />
+              <AvatarImage src={ellaAvatar} alt="Juju" />
               <AvatarFallback><Bot className="w-5 h-5" /></AvatarFallback>
             </Avatar>
             <motion.div
@@ -227,12 +227,12 @@ export function EllaPublicChat() {
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-secondary/30">
               <Avatar className="h-9 w-9 ring-2 ring-primary/30">
-                <AvatarImage src={ellaAvatar} alt="Ella" />
+                <AvatarImage src={ellaAvatar} alt="Juju" />
                 <AvatarFallback><Bot className="w-4 h-4" /></AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-foreground text-sm">Ella</h3>
+                  <h3 className="font-semibold text-foreground text-sm">Juju</h3>
                   <Sparkles className="w-3 h-3 text-primary" />
                 </div>
                 <p className="text-[11px] text-muted-foreground">Assistente de compras • Online</p>
@@ -255,7 +255,7 @@ export function EllaPublicChat() {
                   >
                     {msg.role === 'assistant' && (
                       <Avatar className="h-6 w-6 flex-shrink-0 mt-0.5">
-                        <AvatarImage src={ellaAvatar} alt="Ella" />
+                        <AvatarImage src={ellaAvatar} alt="Juju" />
                         <AvatarFallback><Bot className="w-3 h-3" /></AvatarFallback>
                       </Avatar>
                     )}
