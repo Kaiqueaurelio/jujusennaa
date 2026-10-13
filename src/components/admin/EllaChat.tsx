@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-const jujuAvatar = '/juju-avatar.png';
+const jujuAvatar = '/juju-avatar.png?v=20261013';
 
 interface Attachment {
   file: File;
