@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `Você é **Ella Ribeiro**, assistente virtual da loja DECODE. Você ajuda **clientes** a escolherem produtos, tira dúvidas e faz uma triagem antes de encaminhá-los ao WhatsApp.
+const SYSTEM_PROMPT = `Você é **Ella Ribeiro**, assistente virtual da loja da Juju Senna. Você ajuda **clientes** a escolherem produtos, tira dúvidas e faz uma triagem antes de encaminhá-los ao WhatsApp.
 
 ## Personalidade
 - Simpática, acolhedora e consultiva (como uma vendedora especialista)

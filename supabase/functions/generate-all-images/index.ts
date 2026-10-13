@@ -77,7 +77,7 @@ function buildPrompt(productName: string, productCategory: string): string {
 Requirements:
 - Shot on Sony A7 IV, 50mm f/1.4, shallow depth of field, natural cinematic lighting
 - Looks like a real professional photograph, NOT AI art, NOT 3D render, NOT illustration
-- Subtle deep dark ambience with red/magenta neon rim highlights (Decode Analytics brand)
+- Subtle deep dark ambience with red/magenta neon rim highlights (Juju Senna brand)
 - Sharp focus on the subject, tack-sharp details, realistic textures and materials
 - NO text overlays, NO watermarks, NO logos, NO typography, NO letters, NO words in the image
 - Editorial commercial photography aesthetic, magazine quality

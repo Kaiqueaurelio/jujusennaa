@@ -38,8 +38,8 @@ export interface Profile {
 }
 
 export const initialProfile: Profile = {
-  name: "Decode Analytics",
-  bio: "Transformando dados em decisões. Conteúdos, templates e ferramentas para impulsionar sua jornada digital.",
+  name: "Juju Senna",
+  bio: "Humor e outras coisas aí 😃 | São Luís - MA 🏝️ | Produtos, templates e serviços pra facilitar sua rotina.",
   avatar: "",
   whatsapp: "5511939222885",
 };
@@ -148,7 +148,7 @@ export const initialLinks: Link[] = [
   {
     id: "4",
     title: "Instagram",
-    url: "https://instagram.com/decode.analytics",
+    url: "https://instagram.com/juju.sennaa",
     icon: "Instagram",
     category: "social",
     clicks: 0,
