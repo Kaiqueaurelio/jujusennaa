@@ -23,7 +23,7 @@ import { ProductForm } from '@/components/admin/ProductForm';
 import { LinkForm } from '@/components/admin/LinkForm';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-const jujuAvatar = '/juju-avatar.png';
+const jujuAvatar = '/juju-avatar.png?v=20261013';
 import { X } from 'lucide-react';
 import {
   LogOut, User, ShoppingBag, Link2, Trash2, Plus,
