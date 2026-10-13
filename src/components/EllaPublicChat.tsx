@@ -27,7 +27,7 @@ export function EllaPublicChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Olá! 👋 Sou a **Ella**, assistente virtual da DECODE. Posso te ajudar a encontrar o produto ideal pra você! O que está buscando?',
+      content: 'Olá! 👋 Sou a **Ella**, assistente virtual da Juju Senna. Posso te ajudar a encontrar o produto ideal pra você! O que está buscando?',
     },
   ]);
   const [input, setInput] = useState('');

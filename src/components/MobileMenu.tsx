@@ -52,7 +52,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{profile?.name || 'DECODE'}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{profile?.name || 'JUJU SENNA'}</p>
               </div>
               <button
                 onClick={onClose}
@@ -86,7 +86,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/30">
               <p className="text-xs text-muted-foreground/60">
-                © {new Date().getFullYear()} Decode Analytics
+                © {new Date().getFullYear()} Juju Senna
               </p>
             </div>
           </motion.div>

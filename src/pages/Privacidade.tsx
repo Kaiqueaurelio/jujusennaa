@@ -11,7 +11,7 @@ export default function Privacidade() {
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">Voltar</span>
           </Link>
-          <span className="text-lg font-black text-primary ml-auto">DECODE</span>
+          <span className="text-lg font-black text-primary ml-auto">JUJU SENNA</span>
         </div>
       </header>
 
@@ -22,7 +22,7 @@ export default function Privacidade() {
         <div className="space-y-8 text-muted-foreground leading-relaxed">
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">1. Dados Coletados</h2>
-            <p className="mb-3">A Decode Analytics coleta os seguintes dados pessoais:</p>
+            <p className="mb-3">A Juju Senna coleta os seguintes dados pessoais:</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li><strong className="text-foreground">Dados de cadastro:</strong> nome, e-mail, número de WhatsApp</li>
               <li><strong className="text-foreground">Dados de navegação:</strong> páginas visitadas, tempo de permanência, cliques em produtos e links</li>
@@ -110,7 +110,7 @@ export default function Privacidade() {
               Para questões relacionadas à privacidade e proteção de dados, entre em contato com nosso responsável:
             </p>
             <ul className="mt-2 space-y-1">
-              <li>📧 E-mail: <a href="mailto:contato@decode.com" className="text-primary hover:underline">contato@decode.com</a></li>
+              <li>📧 E-mail: <a href="mailto:decoanalytics@outlook.com.br" className="text-primary hover:underline">decoanalytics@outlook.com.br</a></li>
               <li>📄 Página de contato: <Link to="/contato" className="text-primary hover:underline">Contato</Link></li>
             </ul>
           </section>

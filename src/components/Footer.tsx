@@ -10,7 +10,7 @@ export function Footer() {
 
   const externalLinks = [
     { label: 'WhatsApp', href: whatsappUrl },
-    { label: 'Instagram', href: 'https://instagram.com/decoanalytics' },
+    { label: 'Instagram', href: 'https://instagram.com/juju.sennaa' },
     { label: 'Email', href: 'mailto:decoanalytics@outlook.com.br' },
   ];
 
@@ -65,7 +65,7 @@ export function Footer() {
         </div>
 
         <p className="text-xs text-muted-foreground/60">
-          © {new Date().getFullYear()} Decode Analytics
+          © {new Date().getFullYear()} Juju Senna
         </p>
       </div>
     </footer>

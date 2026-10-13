@@ -11,7 +11,7 @@ export default function TermosDeUso() {
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">Voltar</span>
           </Link>
-          <span className="text-lg font-black text-primary ml-auto">DECODE</span>
+          <span className="text-lg font-black text-primary ml-auto">JUJU SENNA</span>
         </div>
       </header>
 
@@ -23,14 +23,14 @@ export default function TermosDeUso() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">1. Aceitação dos Termos</h2>
             <p>
-              Ao acessar e utilizar a plataforma Decode Analytics ("Plataforma"), você concorda integralmente com estes Termos de Uso. Caso não concorde com qualquer disposição aqui descrita, solicitamos que não utilize nossos serviços. O uso continuado da Plataforma após quaisquer alterações nestes Termos constitui aceitação das modificações realizadas.
+              Ao acessar e utilizar a plataforma Juju Senna ("Plataforma"), você concorda integralmente com estes Termos de Uso. Caso não concorde com qualquer disposição aqui descrita, solicitamos que não utilize nossos serviços. O uso continuado da Plataforma após quaisquer alterações nestes Termos constitui aceitação das modificações realizadas.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">2. Descrição dos Serviços</h2>
             <p className="mb-3">
-              A Decode Analytics é uma plataforma digital que oferece produtos e serviços nas seguintes categorias:
+              A Juju Senna é uma plataforma digital que oferece produtos e serviços nas seguintes categorias:
             </p>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>Produtos digitais: planners, templates, cadernos de estudos, organização pessoal</li>
@@ -45,7 +45,7 @@ export default function TermosDeUso() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">3. Propriedade Intelectual</h2>
             <p>
-              Todo o conteúdo disponibilizado na Plataforma, incluindo mas não se limitando a textos, imagens, logotipos, ícones, templates, planners e materiais digitais, é de propriedade exclusiva da Decode Analytics ou de seus licenciadores. É expressamente proibida a reprodução, distribuição, modificação ou comercialização de qualquer conteúdo sem autorização prévia por escrito.
+              Todo o conteúdo disponibilizado na Plataforma, incluindo mas não se limitando a textos, imagens, logotipos, ícones, templates, planners e materiais digitais, é de propriedade exclusiva da Juju Senna ou de seus licenciadores. É expressamente proibida a reprodução, distribuição, modificação ou comercialização de qualquer conteúdo sem autorização prévia por escrito.
             </p>
             <p className="mt-3">
               Ao adquirir um produto digital, o usuário recebe uma licença de uso pessoal e intransferível. A revenda, redistribuição ou compartilhamento dos produtos adquiridos é estritamente proibida e pode resultar em medidas legais cabíveis.
@@ -72,21 +72,21 @@ export default function TermosDeUso() {
               <li>Manter a confidencialidade de suas credenciais de acesso</li>
               <li>Utilizar os produtos e serviços adquiridos de acordo com a legislação vigente</li>
               <li>Não tentar acessar áreas restritas da Plataforma ou interferir em seu funcionamento</li>
-              <li>Respeitar os direitos de propriedade intelectual da Decode Analytics e de terceiros</li>
+              <li>Respeitar os direitos de propriedade intelectual da Juju Senna e de terceiros</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">6. Limitação de Responsabilidade</h2>
             <p>
-              A Decode Analytics não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso ou impossibilidade de uso da Plataforma. Não garantimos que os serviços serão ininterruptos ou livres de erros. Em nenhuma hipótese nossa responsabilidade total excederá o valor pago pelo usuário nos últimos 12 meses.
+              A Juju Senna não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso ou impossibilidade de uso da Plataforma. Não garantimos que os serviços serão ininterruptos ou livres de erros. Em nenhuma hipótese nossa responsabilidade total excederá o valor pago pelo usuário nos últimos 12 meses.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-foreground mb-3">7. Modificações nos Termos</h2>
             <p>
-              A Decode Analytics reserva-se o direito de modificar estes Termos de Uso a qualquer momento. As alterações entrarão em vigor imediatamente após sua publicação na Plataforma. Recomendamos a revisão periódica destes Termos. O uso continuado da Plataforma após alterações constitui aceitação dos novos termos.
+              A Juju Senna reserva-se o direito de modificar estes Termos de Uso a qualquer momento. As alterações entrarão em vigor imediatamente após sua publicação na Plataforma. Recomendamos a revisão periódica destes Termos. O uso continuado da Plataforma após alterações constitui aceitação dos novos termos.
             </p>
           </section>
 

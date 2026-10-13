@@ -14,7 +14,7 @@ export default function Contato() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
   const whatsappUrl = profile?.whatsapp
-    ? `https://wa.me/${profile.whatsapp}?text=Olá! Vim pelo site da Decode Analytics.`
+    ? `https://wa.me/${profile.whatsapp}?text=Olá! Vim pelo site da Juju Senna.`
     : '#';
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,24 +31,24 @@ export default function Contato() {
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">Voltar</span>
           </Link>
-          <span className="text-lg font-black text-primary ml-auto">DECODE</span>
+          <span className="text-lg font-black text-primary ml-auto">JUJU SENNA</span>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10">
         <h1 className="text-3xl font-bold text-foreground mb-2">Contato</h1>
-        <p className="text-muted-foreground mb-8">Entre em contato com a Decode Analytics pelos canais abaixo.</p>
+        <p className="text-muted-foreground mb-8">Entre em contato com a Juju Senna pelos canais abaixo.</p>
 
         <div className="grid sm:grid-cols-3 gap-4 mb-10">
           <a
-            href="mailto:contato@decode.com"
+            href="mailto:decoanalytics@outlook.com.br"
             className="flex flex-col items-center gap-3 p-6 rounded-xl bg-card border border-border/30 hover:border-primary/40 transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <Mail className="w-5 h-5 text-primary" />
             </div>
             <span className="text-sm font-medium text-foreground">E-mail</span>
-            <span className="text-xs text-muted-foreground">contato@decode.com</span>
+            <span className="text-xs text-muted-foreground">decoanalytics@outlook.com.br</span>
           </a>
 
           <a
@@ -74,7 +74,7 @@ export default function Contato() {
               <Instagram className="w-5 h-5 text-pink-500" />
             </div>
             <span className="text-sm font-medium text-foreground">Instagram</span>
-            <span className="text-xs text-muted-foreground">@decode</span>
+            <span className="text-xs text-muted-foreground">@juju.sennaa</span>
           </a>
         </div>
 
