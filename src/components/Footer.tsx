@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export function Footer() {
   const externalLinks = [
-    { label: 'Instagram', href: 'https://instagram.com/juju.sennaa' },
+    { label: 'Instagram', href: 'https://instagram.com/juju.sennaa?obrf=OXZubXZ3YTY4ZXI%3D' },
   ];
 
   const siteLinks = [
