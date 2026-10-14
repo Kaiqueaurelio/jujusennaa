@@ -1,14 +1,12 @@
 import { motion } from 'framer-motion';
 import { useProfile } from '@/hooks/useProfile';
 import { useProducts } from '@/hooks/useProducts';
-import video1 from '@/assets/juju-video-1.webm.asset.json';
-import video2 from '@/assets/juju-video-2.webm.asset.json';
 import { Play, Info } from 'lucide-react';
 import { useState } from 'react';
 import { ProductModal } from './ProductModal';
 import { Product } from '@/hooks/useProducts';
 
-const heroVideos = [video1.url, video2.url];
+const heroVideos = ['/videos/juju-video-1.mp4', '/videos/juju-video-2.mp4'];
 
 export function HeroBillboard() {
   const { data: profile } = useProfile();
