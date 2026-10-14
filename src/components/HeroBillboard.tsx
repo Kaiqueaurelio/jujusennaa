@@ -18,7 +18,7 @@ export function HeroBillboard() {
 
   return (
     <>
-      <div className="relative w-full h-[40vh] sm:h-[60vh] overflow-hidden">
+      <div className="relative w-full h-[55vh] min-h-[340px] sm:h-[70vh] overflow-hidden">
         <div className="absolute inset-0 grid grid-cols-2" aria-label="Vídeos da Juju Senna">
           {heroVideos.map((video, index) => (
             <video
@@ -40,7 +40,8 @@ export function HeroBillboard() {
           ))}
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30 pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: "inset 0 0 120px 30px hsl(var(--background) / 0.85)" }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-background/30 pointer-events-none" />
         {featuredProduct && (
           <div className="absolute bottom-[15%] right-4 sm:right-12 flex items-center gap-2 z-10">
             <div className="px-3 py-1 border-l-2 border-foreground/50 bg-background/40 backdrop-blur-sm text-foreground/80 text-sm font-medium">
