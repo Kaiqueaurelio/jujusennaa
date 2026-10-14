@@ -20,10 +20,9 @@ export function HeroBillboard() {
     <>
       <div className="relative w-full h-[40vh] sm:h-[60vh] overflow-hidden">
         <div className="absolute inset-0 grid grid-cols-2" aria-label="Vídeos da Juju Senna">
-          {heroVideos.map((src, index) => (
+          {heroVideos.map((video, index) => (
             <video
-              key={src}
-              src={src}
+              key={video.mp4}
               aria-label={`Vídeo da Juju Senna ${index + 1}`}
               autoPlay
               muted
@@ -34,7 +33,10 @@ export function HeroBillboard() {
                 event.currentTarget.play().catch(() => undefined);
               }}
               className="block w-full h-full min-h-0 object-cover"
-            />
+            >
+              <source src={video.webm} type="video/webm" />
+              <source src={video.mp4} type="video/mp4" />
+            </video>
           ))}
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
