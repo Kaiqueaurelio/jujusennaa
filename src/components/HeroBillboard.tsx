@@ -5,8 +5,10 @@ import { Play, Info } from 'lucide-react';
 import { useState } from 'react';
 import { ProductModal } from './ProductModal';
 import { Product } from '@/hooks/useProducts';
+import video1 from '@/assets/juju-video-1.webm.asset.json';
+import video2 from '@/assets/juju-video-2.webm.asset.json';
 
-const heroVideos = ['/videos/juju-video-1.mp4', '/videos/juju-video-2.mp4'];
+const heroVideos = [video1.url, video2.url];
 
 export function HeroBillboard() {
   const { data: profile } = useProfile();
@@ -25,10 +27,9 @@ export function HeroBillboard() {
               aria-label={`Vídeo da Juju Senna ${index + 1}`}
               autoPlay
               muted
-              defaultMuted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               onCanPlay={(event) => {
                 event.currentTarget.play().catch(() => undefined);
               }}
