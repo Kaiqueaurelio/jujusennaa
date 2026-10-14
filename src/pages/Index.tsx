@@ -10,12 +10,8 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { MobileMenu } from '@/components/MobileMenu';
 import { SearchOverlay } from '@/components/SearchOverlay';
 import { Footer } from '@/components/Footer';
-import { TechBackground } from '@/components/TechBackground';
-import { CursorTrail } from '@/components/CursorTrail';
-import { Search, Menu, Sun, Moon, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, Menu, Instagram } from 'lucide-react';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import { useProfile } from '@/hooks/useProfile';
 
 const jujuAvatar = '/juju-avatar.png?v=20261013';
@@ -24,7 +20,6 @@ const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
-  const { theme, setTheme } = useTheme();
   const { data: profile } = useProfile();
   
   const { scrollY } = useScroll();
@@ -42,8 +37,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden relative">
-      <TechBackground />
-      <CursorTrail />
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       <SearchOverlay open={isSearchOpen} onOpenChange={setIsSearchOpen} />
 
@@ -71,7 +64,7 @@ const Index = () => {
             </button>
             <div className="flex items-center gap-2">
               <img src={jujuAvatar} alt="Juju Senna" className="w-9 h-9 rounded-full object-cover border border-primary/50" />
-              <h1 className="text-2xl font-bold text-primary tracking-tight glitch-text" data-text="JUJU SENNA">JUJU SENNA</h1>
+              <h1 className="text-2xl font-bold text-primary tracking-tight">JUJU SENNA</h1>
             </div>
             {/* Inline nav - desktop */}
             <nav className="hidden sm:flex items-center gap-4 ml-4">
@@ -85,13 +78,10 @@ const Index = () => {
             <button className="p-1" onClick={() => setIsSearchOpen(true)}>
               <Search className="w-5 h-5 text-foreground" />
             </button>
-            <button className="p-1" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
-            </button>
+            <a href="https://instagram.com/juju.sennaa" target="_blank" rel="noopener noreferrer" className="p-1" aria-label="Instagram da Juju">
+              <Instagram className="w-5 h-5 text-foreground" />
+            </a>
             <NotificationBell />
-            <Link to="/admin">
-              <img src={jujuAvatar} alt="Juju" className="w-8 h-8 rounded-full object-cover" />
-            </Link>
           </div>
         </div>
       </motion.header>
