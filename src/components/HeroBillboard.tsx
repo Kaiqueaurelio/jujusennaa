@@ -5,7 +5,10 @@ import { Play, Info } from 'lucide-react';
 import { useState } from 'react';
 import { ProductModal } from './ProductModal';
 import { Product } from '@/hooks/useProducts';
-const heroVideos = ['/videos/juju-video-1.mp4', '/videos/juju-video-2.mp4'];
+const heroVideos = [
+  { webm: '/videos/juju-video-1.webm', mp4: '/videos/juju-video-1.mp4' },
+  { webm: '/videos/juju-video-2.webm', mp4: '/videos/juju-video-2.mp4' },
+];
 
 export function HeroBillboard() {
   const { data: profile } = useProfile();
