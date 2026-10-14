@@ -5,8 +5,10 @@ import { Play, Info } from 'lucide-react';
 import { useState } from 'react';
 import { ProductModal } from './ProductModal';
 import { Product } from '@/hooks/useProducts';
-
-const heroVideos = ['/videos/juju-video-1.mp4', '/videos/juju-video-2.mp4'];
+const heroVideos = [
+  { webm: '/videos/juju-video-1.webm', mp4: '/videos/juju-video-1.mp4' },
+  { webm: '/videos/juju-video-2.webm', mp4: '/videos/juju-video-2.mp4' },
+];
 
 export function HeroBillboard() {
   const { data: profile } = useProfile();
@@ -18,22 +20,23 @@ export function HeroBillboard() {
     <>
       <div className="relative w-full h-[40vh] sm:h-[60vh] overflow-hidden">
         <div className="absolute inset-0 grid grid-cols-2" aria-label="Vídeos da Juju Senna">
-          {heroVideos.map((src, index) => (
+          {heroVideos.map((video, index) => (
             <video
-              key={src}
-              src={src}
+              key={video.mp4}
               aria-label={`Vídeo da Juju Senna ${index + 1}`}
               autoPlay
               muted
-              defaultMuted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               onCanPlay={(event) => {
                 event.currentTarget.play().catch(() => undefined);
               }}
               className="block w-full h-full min-h-0 object-cover"
-            />
+            >
+              <source src={video.webm} type="video/webm" />
+              <source src={video.mp4} type="video/mp4" />
+            </video>
           ))}
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-transparent pointer-events-none" />
